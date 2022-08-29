@@ -19,7 +19,7 @@ document.body.appendChild(renderer.domElement);
 
 // 박스
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
 const cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
 
@@ -34,6 +34,11 @@ points.push(new THREE.Vector3(-10, 0, 0));
 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
 const line = new THREE.Line(lineGeometry, lineMaterial);
 scene.add(line);
+
+// 조명
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(-5, 5, 5);
+scene.add(light);
 
 // 그리기
 function animate() {
