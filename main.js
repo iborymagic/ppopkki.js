@@ -17,38 +17,77 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// 박스
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+// 카트 세팅
+const cardTexture = new THREE.TextureLoader().load('yugioh-card-back.jpeg');
+cardTexture.wrapS = THREE.RepeatWrapping;
+cardTexture.wrapT = THREE.RepeatWrapping;
+const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
 
-// 라인
-const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
-const points = [];
-points.push(new THREE.Vector3(-10, 0, 0));
-points.push(new THREE.Vector3(0, 10, 0));
-points.push(new THREE.Vector3(0, 0, 10));
-points.push(new THREE.Vector3(-10, 0, 0));
+const cardPlanes = [];
 
-const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-const line = new THREE.Line(lineGeometry, lineMaterial);
-scene.add(line);
+for (let i = 0; i < 5; i++) {
+  cardPlanes.push(new THREE.Mesh(new THREE.PlaneGeometry(5, 8), cardMaterial));
+}
+// cardPlane.overdraw = true;
+
+// cardPlane.rotation.x = -Math.PI / 2;
+// cardPlane.rotation.z = -Math.PI / 2;
+// cardPlane.rotation.y = -1.5;
+cardPlanes.forEach((plane, index) => {
+  plane.position.set(-14 + index * 7, 0, 0);
+  scene.add(plane);
+});
 
 // 조명
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(-5, 5, 5);
-scene.add(light);
+const zPosAmbLight = new THREE.DirectionalLight(0xffffff, 1);
+zPosAmbLight.position.set(0, 0, 1);
+scene.add(zPosAmbLight);
+
+const zNegAmbLight = new THREE.DirectionalLight(0xffffff, 1);
+zNegAmbLight.position.set(0, 0, -1);
+scene.add(zNegAmbLight);
+
+const yPosAmbLight = new THREE.DirectionalLight(0xffffff, 1);
+yPosAmbLight.position.set(0, 1, 0);
+scene.add(yPosAmbLight);
+
+const yNegAmbLight = new THREE.DirectionalLight(0xffffff, 1);
+yNegAmbLight.position.set(0, -1, 0);
+scene.add(yNegAmbLight);
+
+const xPosAmbLight = new THREE.DirectionalLight(0xffffff, 1);
+xPosAmbLight.position.set(1, 0, 0);
+scene.add(xPosAmbLight);
+
+const xNegAmbLight = new THREE.DirectionalLight(0xffffff, 1);
+xNegAmbLight.position.set(-1, 0, 0);
+scene.add(xNegAmbLight);
+
+function resizeRendererToDisplaySize(renderer) {
+  const canvas = renderer.domElement;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const needResize = canvas.width !== width || canvas.height !== height;
+  if (needResize) {
+    renderer.setSize(width, height, false);
+  }
+  return needResize;
+}
 
 // 그리기
 function animate() {
   requestAnimationFrame(animate);
 
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
+  cardPlanes.forEach((plane) => {
+    plane.rotation.x += 0.005;
+    plane.rotation.y += 0.005;
+  });
 
-  line.rotation.x += 0.01;
-  line.rotation.y += 0.01;
+  if (resizeRendererToDisplaySize(renderer)) {
+    const canvas = renderer.domElement;
+    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+    camera.updateProjectionMatrix();
+  }
 
   renderer.render(scene, camera);
 }
