@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Object3D } from 'three';
 
 const scene = new THREE.Scene();
 
@@ -17,7 +18,7 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// 카트 세팅
+// 카드 세팅
 const cardTexture = new THREE.TextureLoader().load('yugioh-card-back.jpeg');
 cardTexture.wrapS = THREE.RepeatWrapping;
 cardTexture.wrapT = THREE.RepeatWrapping;
@@ -34,11 +35,32 @@ for (let i = 0; i < 5; i++) {
 // cardPlane.rotation.z = -Math.PI / 2;
 // cardPlane.rotation.y = -1.5;
 cardPlanes.forEach((plane, index) => {
+  plane.material.side = THREE.DoubleSide; // 양쪽에 렌더링
   plane.position.set(-14 + index * 7, 0, 0);
   scene.add(plane);
 });
 
-// 조명
+// 양면 카드 세팅
+const blackholeTexture = new THREE.TextureLoader().load('blackhole.jpeg');
+const blackholeMaterial = new THREE.MeshLambertMaterial({
+  map: blackholeTexture,
+});
+
+const cardGeometryFront = new THREE.PlaneGeometry(5, 8);
+const cardGeometryBack = new THREE.PlaneGeometry(5, 8);
+cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
+
+const card = new Object3D();
+const cardMeshFront = new THREE.Mesh(cardGeometryFront, blackholeMaterial);
+const cardMeshBack = new THREE.Mesh(cardGeometryBack, cardMaterial);
+card.add(cardMeshFront);
+card.add(cardMeshBack);
+
+card.position.set(0, 10, 0);
+
+scene.add(card);
+
+// 조명: 안보이지 않게 하기위해 여섯 방향에서 다 쏘는중
 const zPosAmbLight = new THREE.DirectionalLight(0xffffff, 1);
 zPosAmbLight.position.set(0, 0, 1);
 scene.add(zPosAmbLight);
@@ -78,10 +100,13 @@ function resizeRendererToDisplaySize(renderer) {
 function animate() {
   requestAnimationFrame(animate);
 
+  // 카드 회전
   cardPlanes.forEach((plane) => {
     plane.rotation.x += 0.005;
     plane.rotation.y += 0.005;
   });
+
+  card.rotation.y += 0.03;
 
   if (resizeRendererToDisplaySize(renderer)) {
     const canvas = renderer.domElement;
