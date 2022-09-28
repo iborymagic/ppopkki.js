@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "husky install"
   },
   "devDependencies": {
+    "husky": "^8.0.1",
     "vite": "^3.0.7"
   },
   "dependencies": {

@@ -4,6 +4,6 @@ export default {
     base: 'https://iborymagic.github.io/ppopkki.js',
     build: {
         assetsDir: 'public',
-        outDir: '..',
+        outDir: '../dist'
     }
 }
