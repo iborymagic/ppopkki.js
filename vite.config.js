@@ -2,6 +2,7 @@
 export default {
     root: 'src',
     build: {
+        assetsDir: 'public',
         outDir: '..',
     }
 }
