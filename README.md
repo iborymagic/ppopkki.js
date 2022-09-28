@@ -1,6 +1,6 @@
 ## Demo
 
-https://iborymagic.github.com/ppopkki.js
+https://iborymagic.github.io/ppopkki.js
 
 ## 개발환경 구성
 - vite는 엔트리를 `src/index.html`을 기준으로 빌드합니다.
