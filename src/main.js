@@ -1,5 +1,6 @@
-import * as THREE from 'three';
-import { Object3D } from 'three';
+import * as THREE from "three";
+import { Object3D } from "three";
+import { Card } from "ygo-card";
 
 const scene = new THREE.Scene();
 
@@ -19,7 +20,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // 카드 세팅
-const cardTexture = new THREE.TextureLoader().load('./yugioh-card-back.jpeg');
+const cardTexture = new THREE.TextureLoader().load("./yugioh-card-back.jpeg");
 cardTexture.wrapS = THREE.RepeatWrapping;
 cardTexture.wrapT = THREE.RepeatWrapping;
 const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
@@ -41,8 +42,35 @@ cardPlanes.forEach((plane, index) => {
 });
 
 // 양면 카드 세팅
-const blackholeTexture = new THREE.TextureLoader().load('./blackhole.jpeg');
-const blackholeMaterial = new THREE.MeshLambertMaterial({
+const canvas = document.createElement("canvas");
+const data = {
+  name: "Suhyun Jeon",
+  _id: "59438930",
+  type: "monster",
+  type2: "effect",
+  type3: "tuner",
+  attribute: "light",
+  level: 3,
+  lang: "en",
+  race: "Psychic",
+  desc: 'When a monster on the field activates its effect, or when a Spell/Trap that is already face-up on the field activates its effect (Quick Effect): You can send this card from your hand or field to the GY; destroy that card on the field. You can only use this effect of "Ghost Ogre & Snow Rabbit" once per turn',
+  attack: 0,
+  defend: 1800,
+};
+const ygoCard = new Card({
+  data,
+  canvas,
+  size: [400, 584],
+  moldPath: "./mold",
+});
+await ygoCard.render();
+document.body.append(canvas);
+
+// https://threejs.org/docs/#api/en/textures/CanvasTexture
+
+// const blackholeTexture = new THREE.TextureLoader().load("./blackhole.jpeg");
+const blackholeTexture = new THREE.CanvasTexture(canvas);
+const blackholeMaterial = new THREE.MeshBasicMaterial({
   map: blackholeTexture,
 });
 
