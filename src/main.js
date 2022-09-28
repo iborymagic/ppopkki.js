@@ -19,7 +19,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // 카드 세팅
-const cardTexture = new THREE.TextureLoader().load('./assets/yugioh-card-back.jpeg');
+const cardTexture = new THREE.TextureLoader().load('/yugioh-card-back.jpeg');
 cardTexture.wrapS = THREE.RepeatWrapping;
 cardTexture.wrapT = THREE.RepeatWrapping;
 const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
@@ -41,7 +41,7 @@ cardPlanes.forEach((plane, index) => {
 });
 
 // 양면 카드 세팅
-const blackholeTexture = new THREE.TextureLoader().load('./assets/blackhole.jpeg');
+const blackholeTexture = new THREE.TextureLoader().load('/blackhole.jpeg');
 const blackholeMaterial = new THREE.MeshLambertMaterial({
   map: blackholeTexture,
 });
