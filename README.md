@@ -4,8 +4,7 @@ https://iborymagic.github.com/ppopkki.js
 
 ## 개발환경 구성
 - vite는 엔트리를 `src/index.html`을 기준으로 빌드합니다.
-- 빌드 결과물은 `<root>/dist` 폴더에 생성됩니다.
-- 현재는 수동으로 빌드하고 `main` 브랜치로 푸시를 해야 합니다.
+- 빌드 결과물은 `<root>/dist` 폴더에 생성됩니다. GitHub Actions에서 빌드하므로 안해도 됩니다.
 
 
 ### 정적 에셋 연결
@@ -14,6 +13,6 @@ https://iborymagic.github.com/ppopkki.js
 
 ### 로컬 개발환경 설정 
 - `npm run dev` # 로컬에서 개발 테스트
-- `npm run build` #
+- `npm run build` # 정적 파일 생성
 - `npm run preview` # 깃허브에 배포하기 전에 테스트 (빌드 필요)
 
