@@ -1,5 +1,7 @@
-import * as THREE from 'three';
-import { Object3D } from 'three';
+import * as THREE from "three";
+import { Object3D } from "three";
+import { Card } from "ygo-card";
+import cardDataList from "./cards.js";
 
 const scene = new THREE.Scene();
 
@@ -19,46 +21,50 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // 카드 세팅
-const cardTexture = new THREE.TextureLoader().load('./yugioh-card-back.jpeg');
+const cardTexture = new THREE.TextureLoader().load("./yugioh-card-back.jpeg");
 cardTexture.wrapS = THREE.RepeatWrapping;
 cardTexture.wrapT = THREE.RepeatWrapping;
 const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
 
-const cardPlanes = [];
-
-for (let i = 0; i < 5; i++) {
-  cardPlanes.push(new THREE.Mesh(new THREE.PlaneGeometry(5, 8), cardMaterial));
-}
-// cardPlane.overdraw = true;
-
-// cardPlane.rotation.x = -Math.PI / 2;
-// cardPlane.rotation.z = -Math.PI / 2;
-// cardPlane.rotation.y = -1.5;
-cardPlanes.forEach((plane, index) => {
-  plane.material.side = THREE.DoubleSide; // 양쪽에 렌더링
-  plane.position.set(-14 + index * 7, 0, 0);
-  scene.add(plane);
-});
-
 // 양면 카드 세팅
-const blackholeTexture = new THREE.TextureLoader().load('./blackhole.jpeg');
-const blackholeMaterial = new THREE.MeshLambertMaterial({
-  map: blackholeTexture,
+const ygoCards = [];
+
+cardDataList.forEach(async (cardData, idx) => {
+  const canvas = document.createElement("canvas");
+
+  const ygoCard = new Card({
+    data: cardData.data,
+    canvas,
+    size: [400, 584],
+    moldPath: "./mold",
+    getPic: () => cardData.pic,
+  });
+
+  await ygoCard.render();
+  // document.body.append(canvas);
+
+  const ygoTexture = new THREE.CanvasTexture(canvas);
+  const ygoMaterial = new THREE.MeshBasicMaterial({
+    map: ygoTexture,
+  });
+
+  const cardGeometryFront = new THREE.PlaneGeometry(5, 8);
+  const cardGeometryBack = new THREE.PlaneGeometry(5, 8);
+  cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
+
+  const card = new Object3D();
+  const cardMeshFront = new THREE.Mesh(cardGeometryFront, ygoMaterial);
+  const cardMeshBack = new THREE.Mesh(cardGeometryBack, cardMaterial);
+  card.add(cardMeshFront);
+  card.add(cardMeshBack);
+
+  card.position.set(10 * idx - 10, 0, 0);
+
+  scene.add(card);
+  ygoCards.push(card);
 });
 
-const cardGeometryFront = new THREE.PlaneGeometry(5, 8);
-const cardGeometryBack = new THREE.PlaneGeometry(5, 8);
-cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
-
-const card = new Object3D();
-const cardMeshFront = new THREE.Mesh(cardGeometryFront, blackholeMaterial);
-const cardMeshBack = new THREE.Mesh(cardGeometryBack, cardMaterial);
-card.add(cardMeshFront);
-card.add(cardMeshBack);
-
-card.position.set(0, 10, 0);
-
-scene.add(card);
+// https://threejs.org/docs/#api/en/textures/CanvasTexture
 
 // 조명: 안보이지 않게 하기위해 여섯 방향에서 다 쏘는중
 const zPosAmbLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -101,12 +107,9 @@ function animate() {
   requestAnimationFrame(animate);
 
   // 카드 회전
-  cardPlanes.forEach((plane) => {
-    plane.rotation.x += 0.005;
-    plane.rotation.y += 0.005;
+  ygoCards.forEach((card) => {
+    card.rotation.y += 0.02;
   });
-
-  card.rotation.y += 0.03;
 
   if (resizeRendererToDisplaySize(renderer)) {
     const canvas = renderer.domElement;
