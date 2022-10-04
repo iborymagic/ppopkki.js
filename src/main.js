@@ -13,7 +13,8 @@ const camera = new THREE.PerspectiveCamera(
   500
 );
 camera.position.set(0, 0, 50);
-camera.lookAt(0, 0, 0);
+camera.lookAt(scene.position);
+camera.updateMatrixWorld();
 
 // 캔버스 세팅
 const renderer = new THREE.WebGLRenderer();
@@ -28,6 +29,7 @@ const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
 
 // 양면 카드 세팅
 const ygoCards = [];
+let defaultCardScale;
 
 cardDataList.forEach(async (cardData, idx) => {
   const canvas = document.createElement("canvas");
@@ -52,6 +54,7 @@ cardDataList.forEach(async (cardData, idx) => {
   cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
 
   const card = new Object3D();
+  card.name = `hi${idx}`;
   const cardMeshFront = new THREE.Mesh(cardGeometryFront, ygoMaterial);
   const cardMeshBack = new THREE.Mesh(cardGeometryBack, cardMaterial);
   card.add(cardMeshFront);
@@ -61,6 +64,7 @@ cardDataList.forEach(async (cardData, idx) => {
 
   scene.add(card);
   ygoCards.push(card);
+  defaultCardScale = card.scale;
 });
 
 // https://threejs.org/docs/#api/en/textures/CanvasTexture
@@ -92,14 +96,83 @@ scene.add(xNegAmbLight);
 
 function resizeRendererToDisplaySize(renderer) {
   const canvas = renderer.domElement;
-  const width = canvas.clientWidth * window.devicePixelRatio;
-  const height = canvas.clientHeight * window.devicePixelRatio;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
   const needResize = canvas.width !== width || canvas.height !== height;
   if (needResize) {
     renderer.setSize(width, height, false);
   }
   return needResize;
 }
+
+// raycaster
+const mouse = new THREE.Vector2();
+const raycaster = new THREE.Raycaster();
+
+const onMouseMove = (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  const intersects = raycaster.intersectObjects(scene.children);
+  console.log(scene.children);
+
+  if (intersects.length > 0) {
+    const firstIntersected = intersects[0];
+
+    const line = new THREE.Mesh(
+      firstIntersected.object.geometry,
+      new THREE.MeshBasicMaterial({ color: 0x00ffff, lineWidth: 2 })
+    );
+    line.position.set(
+      firstIntersected.object.position.x,
+      firstIntersected.object.position.y,
+      firstIntersected.object.position.z
+    );
+    line.rotation.set(
+      firstIntersected.object.rotation.x,
+      firstIntersected.object.rotation.y,
+      firstIntersected.object.rotation.z
+    );
+
+    scene.add(line);
+  }
+
+  // intersects.forEach((intersect) => {
+  //   console.log({ intersect });
+  //   console.log(intersect.object.position);
+
+  //   console.log(intersect.object.name);
+  //   // console.log(intersect);
+  //   // const line = new THREE.LineSegments(
+  //   //   new THREE.EdgesGeometry(intersect.object.geometry),
+  //   //   new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2 })
+  //   // );
+  //   const line = new THREE.Mesh(
+  //     intersect.object.geometry,
+  //     new THREE.MeshBasicMaterial({ color: 0x00ffff, lineWidth: 2 })
+  //   );
+  //   line.position.set(
+  //     intersect.object.position.x,
+  //     intersect.object.position.y,
+  //     intersect.object.position.z
+  //   );
+  //   line.rotation.set(
+  //     intersect.object.rotation.x,
+  //     intersect.object.rotation.y,
+  //     intersect.object.rotation.z
+  //   );
+
+  //   console.log(intersect.object.position);
+
+  //   // line.position.setFromEuler(intersect.object.position);
+  //   // line.rotation.setFromVector3(intersect.object.rotation);
+
+  //   scene.add(line);
+  // });
+};
+
+window.addEventListener("mousemove", onMouseMove);
 
 // 그리기
 function animate() {
