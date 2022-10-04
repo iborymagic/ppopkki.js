@@ -35,13 +35,12 @@ cardDataList.forEach(async (cardData, idx) => {
   const ygoCard = new Card({
     data: cardData.data,
     canvas,
-    size: [400, 584],
+    size: [400 * window.devicePixelRatio, 584 * window.devicePixelRatio],
     moldPath: "./mold",
     getPic: () => cardData.pic,
   });
 
   await ygoCard.render();
-  // document.body.append(canvas);
 
   const ygoTexture = new THREE.CanvasTexture(canvas);
   const ygoMaterial = new THREE.MeshBasicMaterial({
@@ -93,8 +92,8 @@ scene.add(xNegAmbLight);
 
 function resizeRendererToDisplaySize(renderer) {
   const canvas = renderer.domElement;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
+  const width = canvas.clientWidth * window.devicePixelRatio;
+  const height = canvas.clientHeight * window.devicePixelRatio;
   const needResize = canvas.width !== width || canvas.height !== height;
   if (needResize) {
     renderer.setSize(width, height, false);
