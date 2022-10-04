@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { Object3D } from "three";
 import { Card } from "ygo-card";
 import cardDataList from "./cards.js";
+import TWEEN, { Tween } from "@tweenjs/tween.js";
 
 const scene = new THREE.Scene();
 
@@ -29,7 +30,9 @@ const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
 
 // 양면 카드 세팅
 const ygoCards = [];
-let defaultCardScale;
+const cards = {};
+
+let hoveredName = null;
 
 cardDataList.forEach(async (cardData, idx) => {
   const canvas = document.createElement("canvas");
@@ -54,17 +57,21 @@ cardDataList.forEach(async (cardData, idx) => {
   cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
 
   const card = new Object3D();
-  card.name = `hi${idx}`;
+  const name = `hi${idx}`;
+  card.name = name;
   const cardMeshFront = new THREE.Mesh(cardGeometryFront, ygoMaterial);
+  cardMeshFront.name = 'front'
   const cardMeshBack = new THREE.Mesh(cardGeometryBack, cardMaterial);
+  cardMeshBack.name = 'back'
   card.add(cardMeshFront);
   card.add(cardMeshBack);
 
   card.position.set(10 * idx - 10, 0, 0);
+  card.rotation.set(0, Math.PI, 0);
 
   scene.add(card);
   ygoCards.push(card);
-  defaultCardScale = card.scale;
+  cards[name] = card;
 });
 
 // https://threejs.org/docs/#api/en/textures/CanvasTexture
@@ -115,73 +122,42 @@ const onMouseMove = (e) => {
   raycaster.setFromCamera(mouse, camera);
 
   const intersects = raycaster.intersectObjects(scene.children);
-  console.log(scene.children);
 
   if (intersects.length > 0) {
-    const firstIntersected = intersects[0];
+    const parent = intersects[0].object.parent;
+    if (hoveredName !== parent.name) {
+      if (hoveredName in cards && 'tween' in cards[hoveredName]) {
+        const card = cards[hoveredName];
+        card.tween.stop();
+        card.tween = new Tween({ scale: card.scale.x }).to({ scale: 1 }, 150).onUpdate(({ scale }) => {
+          card.scale.set(scale, scale, scale);
+        }).start();
+      }
 
-    const line = new THREE.Mesh(
-      firstIntersected.object.geometry,
-      new THREE.MeshBasicMaterial({ color: 0x00ffff, lineWidth: 2 })
-    );
-    line.position.set(
-      firstIntersected.object.position.x,
-      firstIntersected.object.position.y,
-      firstIntersected.object.position.z
-    );
-    line.rotation.set(
-      firstIntersected.object.rotation.x,
-      firstIntersected.object.rotation.y,
-      firstIntersected.object.rotation.z
-    );
-
-    scene.add(line);
+      cards[parent.name].tween = new Tween({ scale: 1 }).to({ scale: 1.1 }, 200).onUpdate(({ scale }) => {
+        cards[parent.name].scale.set(scale, scale, scale);
+      }).start();
+      hoveredName = parent.name;
+    }
   }
-
-  // intersects.forEach((intersect) => {
-  //   console.log({ intersect });
-  //   console.log(intersect.object.position);
-
-  //   console.log(intersect.object.name);
-  //   // console.log(intersect);
-  //   // const line = new THREE.LineSegments(
-  //   //   new THREE.EdgesGeometry(intersect.object.geometry),
-  //   //   new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2 })
-  //   // );
-  //   const line = new THREE.Mesh(
-  //     intersect.object.geometry,
-  //     new THREE.MeshBasicMaterial({ color: 0x00ffff, lineWidth: 2 })
-  //   );
-  //   line.position.set(
-  //     intersect.object.position.x,
-  //     intersect.object.position.y,
-  //     intersect.object.position.z
-  //   );
-  //   line.rotation.set(
-  //     intersect.object.rotation.x,
-  //     intersect.object.rotation.y,
-  //     intersect.object.rotation.z
-  //   );
-
-  //   console.log(intersect.object.position);
-
-  //   // line.position.setFromEuler(intersect.object.position);
-  //   // line.rotation.setFromVector3(intersect.object.rotation);
-
-  //   scene.add(line);
-  // });
 };
 
+const onMouseDown = () => {
+  if(!hoveredName) return;
+  const card = cards[hoveredName];
+  if(!card) return;
+
+  card.flipTween = new Tween({y: card.rotation.y}).to({y: card.rotation.y + Math.PI}, 200).onUpdate(({y})=>{
+    card.rotation.y = y;
+  }).start();
+  
+}
 window.addEventListener("mousemove", onMouseMove);
+window.addEventListener('mousedown', onMouseDown);
 
 // 그리기
 function animate() {
   requestAnimationFrame(animate);
-
-  // 카드 회전
-  ygoCards.forEach((card) => {
-    card.rotation.y += 0.02;
-  });
 
   if (resizeRendererToDisplaySize(renderer)) {
     const canvas = renderer.domElement;
@@ -190,6 +166,7 @@ function animate() {
   }
 
   renderer.render(scene, camera);
+  TWEEN.update();
 }
 
 animate();
