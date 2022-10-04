@@ -45,6 +45,6 @@ const ycData = {
 
 export default [
   { data: hcData, pic: "./me.jpeg" },
-  { data: shData, pic: "./totu.png" },
-  { data: ycData, pic: "./pepe.png" },
+  { data: shData, pic: "./pepe.png" },
+  { data: ycData, pic: "./totu.png" },
 ];
