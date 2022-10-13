@@ -29,50 +29,59 @@ cardTexture.wrapT = THREE.RepeatWrapping;
 const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
 
 // 양면 카드 세팅
-const ygoCards = [];
 const cards = {};
 
 let hoveredName = null;
 
-cardDataList.forEach(async (cardData, idx) => {
-  const canvas = document.createElement("canvas");
+await Promise.all(
+  cardDataList.map(async (cardData, idx) => {
+    const canvas = document.createElement("canvas");
 
-  const ygoCard = new Card({
-    data: cardData.data,
-    canvas,
-    size: [400 * window.devicePixelRatio, 584 * window.devicePixelRatio],
-    moldPath: "./mold",
-    getPic: () => cardData.pic,
-  });
+    const ygoCard = new Card({
+      data: cardData.data,
+      canvas,
+      size: [400 * window.devicePixelRatio, 584 * window.devicePixelRatio],
+      moldPath: "./mold",
+      getPic: () => cardData.pic,
+    });
 
-  await ygoCard.render();
+    await ygoCard.render();
 
-  const ygoTexture = new THREE.CanvasTexture(canvas);
-  const ygoMaterial = new THREE.MeshBasicMaterial({
-    map: ygoTexture,
-  });
+    const ygoTexture = new THREE.CanvasTexture(canvas);
+    const ygoMaterial = new THREE.MeshBasicMaterial({
+      map: ygoTexture,
+    });
 
-  const cardGeometryFront = new THREE.PlaneGeometry(5, 8);
-  const cardGeometryBack = new THREE.PlaneGeometry(5, 8);
-  cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
+    const cardGeometryFront = new THREE.PlaneGeometry(5, 8);
+    const cardGeometryBack = new THREE.PlaneGeometry(5, 8);
+    cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
 
-  const card = new Object3D();
-  const name = `hi${idx}`;
-  card.name = name;
-  const cardMeshFront = new THREE.Mesh(cardGeometryFront, ygoMaterial);
-  cardMeshFront.name = 'front'
-  const cardMeshBack = new THREE.Mesh(cardGeometryBack, cardMaterial);
-  cardMeshBack.name = 'back'
-  card.add(cardMeshFront);
-  card.add(cardMeshBack);
+    const card = new Object3D();
 
-  card.position.set(10 * idx - 10, 0, 0);
-  card.rotation.set(0, Math.PI, 0);
+    const name = `card${idx}`;
+    card.name = name;
+    const cardMeshFront = new THREE.Mesh(cardGeometryFront, ygoMaterial);
+    cardMeshFront.name = "front";
+    const cardMeshBack = new THREE.Mesh(cardGeometryBack, cardMaterial);
+    cardMeshBack.name = "back";
 
-  scene.add(card);
-  ygoCards.push(card);
-  cards[name] = card;
-});
+    card.add(cardMeshFront);
+    card.add(cardMeshBack);
+
+    const outline = new THREE.LineSegments(
+      new THREE.EdgesGeometry(cardGeometryBack),
+      new THREE.LineBasicMaterial({ color: 0x00ff00 })
+    );
+    outline.visible = false;
+    card.add(outline);
+
+    card.position.set(10 * idx - 10, 0, 0);
+    card.rotation.set(0, Math.PI, 0);
+
+    scene.add(card);
+    cards[name] = card;
+  })
+);
 
 // https://threejs.org/docs/#api/en/textures/CanvasTexture
 
@@ -116,6 +125,8 @@ function resizeRendererToDisplaySize(renderer) {
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 
+console.log(cards);
+
 const onMouseMove = (e) => {
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -126,34 +137,52 @@ const onMouseMove = (e) => {
   if (intersects.length > 0) {
     const parent = intersects[0].object.parent;
     if (hoveredName !== parent.name) {
-      if (hoveredName in cards && 'tween' in cards[hoveredName]) {
+      if (hoveredName in cards && "tween" in cards[hoveredName]) {
         const card = cards[hoveredName];
         card.tween.stop();
-        card.tween = new Tween({ scale: card.scale.x }).to({ scale: 1 }, 150).onUpdate(({ scale }) => {
-          card.scale.set(scale, scale, scale);
-        }).start();
+        card.tween = new Tween({ scale: card.scale.x })
+          .to({ scale: 1 }, 150)
+          .onUpdate(({ scale }) => {
+            card.scale.set(scale, scale, scale);
+
+            const outline = card.children.find(
+              (child) => child.type === "LineSegments"
+            );
+            if (outline) outline.visible = false;
+          })
+          .start();
       }
 
-      cards[parent.name].tween = new Tween({ scale: 1 }).to({ scale: 1.1 }, 200).onUpdate(({ scale }) => {
-        cards[parent.name].scale.set(scale, scale, scale);
-      }).start();
+      cards[parent.name].tween = new Tween({ scale: 1 })
+        .to({ scale: 1.1 }, 200)
+        .onUpdate(({ scale }) => {
+          cards[parent.name].scale.set(scale, scale, scale);
+
+          const outline = cards[parent.name].children.find(
+            (child) => child.type === "LineSegments"
+          );
+          if (outline) outline.visible = true;
+        })
+        .start();
       hoveredName = parent.name;
     }
   }
 };
 
 const onMouseDown = () => {
-  if(!hoveredName) return;
+  if (!hoveredName) return;
   const card = cards[hoveredName];
-  if(!card) return;
+  if (!card) return;
 
-  card.flipTween = new Tween({y: card.rotation.y}).to({y: card.rotation.y + Math.PI}, 200).onUpdate(({y})=>{
-    card.rotation.y = y;
-  }).start();
-  
-}
+  card.flipTween = new Tween({ y: card.rotation.y })
+    .to({ y: card.rotation.y + Math.PI }, 200)
+    .onUpdate(({ y }) => {
+      card.rotation.y = y;
+    })
+    .start();
+};
 window.addEventListener("mousemove", onMouseMove);
-window.addEventListener('mousedown', onMouseDown);
+window.addEventListener("mousedown", onMouseDown);
 
 // 그리기
 function animate() {
