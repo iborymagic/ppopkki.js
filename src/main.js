@@ -3,8 +3,6 @@ import { Object3D } from "three";
 import { Card } from "ygo-card";
 import TWEEN, { Tween } from "@tweenjs/tween.js";
 
-console.log("hi");
-
 function onSubmit() {
   const textarea = document.getElementById("arr");
   if (!textarea) return;
@@ -75,6 +73,8 @@ async function startGameWithStringArr(arr) {
   const cards = {};
 
   let hoveredName = null;
+  const rad = (Math.PI * 2) / cardDataList.length;
+  const radOffset = Math.PI / 2;
 
   await Promise.all(
     cardDataList.map(async (cardData, idx) => {
@@ -118,7 +118,11 @@ async function startGameWithStringArr(arr) {
       outline.visible = false;
       card.add(outline);
 
-      card.position.set(10 * idx - 10, 0, 0);
+      card.position.set(
+        12 * Math.cos(rad * idx + radOffset),
+        12 * Math.sin(rad * idx + radOffset),
+        0
+      );
       card.rotation.set(0, Math.PI, 0);
 
       scene.add(card);
