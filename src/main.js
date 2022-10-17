@@ -14,11 +14,54 @@ function onSubmit() {
     startGameWithStringArr(arr);
     const input = document.getElementById("input");
     if (input) input.style = "display: none;";
+    const jump = document.getElementById("jump");
+    if (jump) jump.style.visibility = "visible";
   } catch (e) {
     alert(e);
   }
 }
 
+function jumpingCards() {
+  window.deck.visible = false;
+  const jump = document.getElementById("jump");
+  if (jump) jump.style.visibility = "hidden";
+  Object.entries(window.cards).forEach(([name, obj], idx) => {
+    obj.visible = true;
+    obj.rotationTween = new Tween({
+      x: obj.rotation.x,
+      y: obj.rotation.y,
+      z: obj.rotation.z,
+    })
+      .to({ x: 0, y: Math.PI, z: 0 })
+      .onUpdate(({ x, y, z }) => {
+        obj.rotation.x = x;
+        obj.rotation.y = y;
+        obj.rotation.z = z;
+      })
+      .start();
+
+    const rad = (Math.PI * 2) / Object.keys(window.cards).length;
+    const radOffset = Math.PI / 2;
+
+    obj.positiontween = new Tween({
+      x: 0,
+      y: 0,
+      z: 0,
+    })
+      .to({
+        x: 12 * Math.cos(rad * idx + radOffset),
+        y: 12 * Math.sin(rad * idx + radOffset),
+        z: 0,
+      })
+      .onUpdate(({ x, y, z }) => {
+        obj.position.x = x;
+        obj.position.y = y;
+        obj.position.z = z;
+      })
+      .start();
+  });
+}
+window.jumpingCards = jumpingCards;
 window.onSubmit = onSubmit;
 
 function getCardDataListFromStringArr(arr) {
@@ -69,12 +112,26 @@ async function startGameWithStringArr(arr) {
   cardTexture.wrapT = THREE.RepeatWrapping;
   const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
 
+  // 초기 박스 세팅
+  const geometry = new THREE.BoxGeometry(5, 1, 8);
+  // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  const material = new THREE.MeshBasicMaterial({ map: cardTexture });
+
+  const deckObject = new Object3D();
+  const deck = new THREE.Mesh(geometry, material);
+  deckObject.name = "deck";
+  deckObject.add(deck);
+  deck.setRotationFromEuler(
+    new THREE.Euler(Math.atan(1 / Math.sqrt(2)), Math.PI / 4, 0, "XYZ")
+  );
+  scene.add(deck);
+  window.deck = deck;
+
   // 양면 카드 세팅
   const cards = {};
+  window.cards = cards;
 
   let hoveredName = null;
-  const rad = (Math.PI * 2) / cardDataList.length;
-  const radOffset = Math.PI / 2;
 
   await Promise.all(
     cardDataList.map(async (cardData, idx) => {
@@ -118,14 +175,17 @@ async function startGameWithStringArr(arr) {
       outline.visible = false;
       card.add(outline);
 
-      card.position.set(
-        12 * Math.cos(rad * idx + radOffset),
-        12 * Math.sin(rad * idx + radOffset),
-        0
+      // card.position.set(
+      //   12 * Math.cos(rad * idx + radOffset),
+      //   12 * Math.sin(rad * idx + radOffset),
+      //   0
+      // );
+      // card.rotation.set(0, Math.PI, 0);
+      card.setRotationFromEuler(
+        new THREE.Euler(Math.atan(1 / Math.sqrt(2)), Math.PI / 4, 0, "XYZ")
       );
-      card.rotation.set(0, Math.PI, 0);
-
       scene.add(card);
+      card.visible = false;
       cards[name] = card;
     })
   );
@@ -183,7 +243,15 @@ async function startGameWithStringArr(arr) {
 
     if (intersects.length > 0) {
       const parent = intersects[0].object.parent;
-      if (hoveredName !== parent.name) {
+      console.log(parent.name, parent);
+
+      if (!parent.name) return;
+      if (parent.name === "deck") {
+        hoveredName = "deck";
+        return;
+      }
+
+      if (hoveredName !== parent.name && hoveredName !== "deck") {
         if (hoveredName in cards && "tween" in cards[hoveredName]) {
           const card = cards[hoveredName];
           card.tween.stop();
@@ -218,6 +286,11 @@ async function startGameWithStringArr(arr) {
 
   const onMouseDown = () => {
     if (!hoveredName) return;
+
+    if (hoveredName === "deck") {
+      console.log("move decks!");
+      return;
+    }
     const card = cards[hoveredName];
     if (!card) return;
 
