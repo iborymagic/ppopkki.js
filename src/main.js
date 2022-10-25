@@ -1,19 +1,23 @@
 import * as THREE from "three";
 import Game from "./game";
 import CardObject from "./card-object";
+import { merge } from "lodash-es";
 // import GUI from 'lil-gui';
 
 const game = new Game();
 
+const textarea = document.getElementById("arr");
+const nInput = document.getElementById("n");
+const sampleData = [{ "data": { "name": "수현" } }, { "data": { "name": "현철" } }, { "data": { "name": "agrajak" }, "pic": "https://images.squarespace-cdn.com/content/v1/56e0f44160b5e96aec2019f3/1545175398584-PQZBH193NCEI1SC1RQR7/poo-emoji" }]
+
+textarea.setAttribute('placeHolder', JSON.stringify(sampleData));
+textarea.value = JSON.stringify(sampleData);
+
 function onSubmit() {
-  const textarea = document.getElementById("arr");
   if (!textarea) return;
   try {
     const arr = JSON.parse(textarea.value);
-    if (arr.some((item) => typeof item !== "string"))
-      throw new Error("입력은 현재 string의 배열만 가능합니다.");
-
-    game.prepareCards(getCardDataListFromStringArr(arr));
+    game.prepareCards(getCardDataListFromStringArr(arr, Math.min(nInput?.value ?? 1, arr.length)));
     const input = document.getElementById("input");
     if (input) input.style = "display: none;";
   } catch (e) {
@@ -23,12 +27,11 @@ function onSubmit() {
 
 window.onSubmit = onSubmit;
 
-function getCardDataListFromStringArr(arr) {
-  return arr.sort(() => Math.random() - 0.5).map((item, idx) => {
-    return {
+function getCardDataListFromStringArr(arr, n) {
+  return arr.sort(() => Math.random() - 0.5).slice(0, n).map((item, idx) => {
+    return merge({
       name: `card-${idx}`,
       data: {
-        name: item,
         _id: "59438930",
         type: "monster",
         type2: "effect",
@@ -42,7 +45,7 @@ function getCardDataListFromStringArr(arr) {
         defend: 1800,
       },
       pic: "./me.jpeg",
-    };
+    }, item);
   });
 }
 

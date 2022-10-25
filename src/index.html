@@ -5,16 +5,20 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vite App</title>
+  <title>popkki</title>
   <script type="module" src="./main.js"></script>
 </head>
 
 <body style="margin: 0;">
   <div id="app"></div>
   <div id="input" style="position: absolute; top: 0; left: 0; width: 30vw; height: 50vh; padding: 20px;">
-    <textarea id="arr" rows="4"
-      placeholder="[&quot;수현&quot;, &quot;현철&quot;, &quot;agrajak&quot;]">[&quot;수현&quot;, &quot;현철&quot;, &quot;agrajak&quot;]</textarea>
-    <input type="button" value="do it" onclick="onSubmit()" />
+    <textarea id="arr" rows="6" style="width: 800px; height:500px;"
+      placeholder="[{&quot;data&quot;: {&quot;name&quot;: &quot;수현&quot;}}, {&quot;data&quot;: {&quot;name&quot;: &quot;현철&quot;}}, {&quot;data&quot;: {&quot;name&quot;: &quot;agrajak&quot;}}]">[{&quot;data&quot;: {&quot;name&quot;: &quot;수현&quot;}}, {&quot;data&quot;: {&quot;name&quot;: &quot;현철&quot;}}, {&quot;data&quot;: {&quot;name&quot;: &quot;agrajak&quot;}}]</textarea>
+    에서
+    <input id="n" type="number" placeholder="pick N of em" value="1" style="width: 50px;"> 명을 뽑습니다.
+    <p>
+      <input type="button" value="고고~" onclick="onSubmit()">
+    </p>
   </div>
 
 </body>
