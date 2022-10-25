@@ -4,12 +4,9 @@ import { Mesh } from "three";
 
 class Deck extends Object3D {
     deck: THREE.Mesh;
-    onHover() {
-        console.log('deck hovered!')
-    }
-    onClick () {
-        console.log('deck clicked!')
-    }
+    onClick: () => void;
+    onHover: () => void;
+   
     init() {
 
         // 카드 세팅

@@ -14,8 +14,8 @@ export function yugiohCardTextureFactory(): THREE.Texture {
 }
 
 class CardObject extends Object3D {
-  name: string;
   props: CardObjectProps;
+  outline: THREE.LineSegments;
   scaleTween: Tween<{ scale: number; }>;
   rotationTween: Tween<{ x: number; y: number; z: number; }>;
   positionTween: Tween<{ x: number; y: number; z: number; }>;
@@ -26,9 +26,31 @@ class CardObject extends Object3D {
     this.props = cardProps;
     this.name = this.props.name;
   }
+
   onHover() {
-    console.log('card hovered!')
+    this.scaleTween = new Tween({ scale: 1 })
+      .to({ scale: 1.1 }, 200)
+      .onUpdate(({ scale }) => {
+        this.scale.set(scale, scale, scale);
+        this.outline.visible = true;
+      })
+      .start();
   }
+
+  onUnHover() {
+    if (this.scaleTween) {
+      this.scaleTween.stop();
+      this.scaleTween = new Tween({ scale: this.scale.x })
+        .to({ scale: 1 }, 150)
+        .onUpdate(({ scale }) => {
+          this.scale.set(scale, scale, scale);
+          this.outline.visible = false;
+        })
+        .start();
+    }
+
+  }
+
   onClick() {
     console.log('card clicked!')
 
@@ -75,6 +97,7 @@ class CardObject extends Object3D {
       new THREE.LineBasicMaterial({ color: 0x00ff00 })
     );
     outline.visible = false;
+    this.outline = outline;
     this.add(outline);
 
     // card.position.set(

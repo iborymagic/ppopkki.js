@@ -5,7 +5,7 @@ import TWEEN, { Tween } from '@tweenjs/tween.js';
 
 class Game {
 
-  hoveredName?: string;
+  hoveredName: string | null = null;
 
   cardMap: Record<string, CardObject>;
   scene: THREE.Scene;
@@ -15,36 +15,26 @@ class Game {
   mouse = new THREE.Vector2();
   rayCaster = new THREE.Raycaster();
 
-  onHoverCardObject(name: string) {
-    if (this.hoveredName !== name && name in this.cardMap) {
-      const card = this.cardMap[name];
-      if (card.scaleTween) {
-        card.scaleTween.stop();
-        card.scaleTween = new Tween({ scale: card.scale.x })
-          .to({ scale: 1 }, 150)
-          .onUpdate(({ scale }) => {
-            card.scale.set(scale, scale, scale);
+  onHoverCardObject(name: string | null) {
 
-            const outline = card.children.find(
-              (child) => child.type === "LineSegments"
-            );
-            if (outline) outline.visible = false;
-          })
-          .start();
+    const beforeName = this.hoveredName;
+    if (beforeName !== name) {
+
+      if (name && name in this.cardMap) {
+
+        const card = this.cardMap[name];
+        card.onHover();
+        this.hoveredName = name;
+        return;
+
       }
 
-      card.scaleTween = new Tween({ scale: 1 })
-        .to({ scale: 1.1 }, 200)
-        .onUpdate(({ scale }) => {
-          card.scale.set(scale, scale, scale);
+      if (beforeName && beforeName in this.cardMap) {
+        const card = this.cardMap[beforeName];
+        this.hoveredName = name;
+        card.onUnHover();
+      }
 
-          const outline = card.children.find(
-            (child) => child.type === "LineSegments"
-          );
-          if (outline) outline.visible = true;
-        })
-        .start();
-      this.hoveredName = name;
     }
   }
   constructor() {
@@ -92,7 +82,6 @@ class Game {
     deck.init();
     scene.add(deck);
 
-
     // 캔버스 세팅
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -120,14 +109,21 @@ class Game {
         this.cardMap[cardProp.name] = card;
         return card.render();
       }));
-    Object.values(this.cardMap).forEach(card => {
-      this.scene.add(card);
-    })
+
     this.animate();
+
+    this.deck.onClick = () => {
+      Object.values(this.cardMap).forEach(card => {
+        this.scene.add(card);
+      })
+      this.deck.visible = false;
+      this.pop();
+    }
   }
 
   pop() {
-    this.deck.visible = false;
+
+    console.log(this.cardMap)
     Object.entries(this.cardMap).forEach(([name, obj], idx) => {
       obj.visible = true;
       obj.rotationTween = new Tween({

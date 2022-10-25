@@ -1,6 +1,4 @@
 import * as THREE from "three";
-import { Object3D } from "three";
-import TWEEN, { Tween } from "@tweenjs/tween.js";
 import Game from "./game";
 import CardObject from "./card-object";
 
@@ -17,25 +15,17 @@ function onSubmit() {
     game.prepareCards(getCardDataListFromStringArr(arr));
     const input = document.getElementById("input");
     if (input) input.style = "display: none;";
-    const jump = document.getElementById("jump");
-    if (jump) jump.style.visibility = "visible";
   } catch (e) {
     alert(e);
   }
 }
 
-function jumpingCards() {
-  game.pop();
-  const jump = document.getElementById("jump");
-  if (jump) jump.style.visibility = "hidden";
-
-}
-window.jumpingCards = jumpingCards;
 window.onSubmit = onSubmit;
 
 function getCardDataListFromStringArr(arr) {
-  return arr.map((item) => {
+  return arr.map((item, idx) => {
     return {
+      name: `card-${idx}`,
       data: {
         name: item,
         _id: "59438930",
@@ -56,9 +46,6 @@ function getCardDataListFromStringArr(arr) {
 }
 
 
-let hoveredName = null;
-
-
 // raycaster
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
@@ -72,21 +59,15 @@ const onMouseMove = (e) => {
 
   if (intersects.length > 0) {
     const parent = intersects[0].object.parent;
-    console.log(parent.name, parent);
 
     if (!parent.name) return;
-
-    parent.onHover();
-    if (parent.name === "deck") {
-      parent
-      hoveredName = "deck";
-      return;
-    }
 
     if (parent instanceof CardObject) {
       game.onHoverCardObject(parent.name);
     }
+    return;
   }
+  game.onHoverCardObject(null);
 };
 
 const onMouseDown = (e) => {
@@ -98,7 +79,7 @@ const onMouseDown = (e) => {
 
   if (intersects.length > 0) {
     const parent = intersects[0].object.parent;
-    parent.onClick();
+    if (parent.onClick) parent.onClick();
   }
 };
 window.addEventListener("mousemove", onMouseMove);
