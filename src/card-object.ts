@@ -2,6 +2,7 @@ import { Tween } from "@tweenjs/tween.js";
 import * as THREE from "three";
 import { Object3D } from "three";
 import { Card, CardProps } from "ygo-card";
+import { isometicDegree } from "./deck";
 
 export type CardObjectProps = CardProps & { pic: string; name: string }
 
@@ -105,10 +106,10 @@ class CardObject extends Object3D {
     //   12 * Math.sin(rad * idx + radOffset),
     //   0
     // );
-    // card.rotation.set(0, Math.PI, 0);
-    this.setRotationFromEuler(
-      new THREE.Euler(Math.atan(1 / Math.sqrt(2)), Math.PI / 4, 0, "XYZ")
-    );
+    this.rotation.set(isometicDegree + Math.PI / 2, 0, -isometicDegree);
+    // this.setRotationFromEuler(
+    // new THREE.Euler(0, Math.PI / 4, 0, "XYZ")
+    // );
   }
 
 

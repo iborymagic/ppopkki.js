@@ -105,7 +105,6 @@ class Game {
           name: `card-${idx}`
         });
 
-        // card.visible = false;
         this.cardMap[cardProp.name] = card;
         return card.render();
       }));

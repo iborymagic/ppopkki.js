@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import Game from "./game";
 import CardObject from "./card-object";
+// import GUI from 'lil-gui';
 
 const game = new Game();
 
@@ -45,6 +46,25 @@ function getCardDataListFromStringArr(arr) {
   });
 }
 
+// const gui = new GUI();
+// const obj = {
+//   x: 0,
+//   y: 0,
+//   z: 0,
+// }
+
+// gui.add(obj, 'x').onChange((x) => {
+//   Object.values(game.cardMap).map(card => card.rotation.x = x / 180 * Math.PI);
+// })
+// gui.add(obj, 'y').onChange((y) => {
+//   Object.values(game.cardMap).map(card => card.rotation.y = y / 180 * Math.PI);
+// })
+// gui.add(obj, 'z').onChange((z) => {
+//   Object.values(game.cardMap).map(card => card.rotation.z = z / 180 * Math.PI);
+// })
+
+
+// game.prepareCards(getCardDataListFromStringArr(['hihi', 'byebye']));
 
 // raycaster
 const mouse = new THREE.Vector2();

@@ -1,12 +1,12 @@
 import { Object3D } from "three";
 import * as THREE from "three";
-import { Mesh } from "three";
 
+export const isometicDegree = Math.atan(1 / Math.sqrt(2));
 class Deck extends Object3D {
     deck: THREE.Mesh;
     onClick: () => void;
     onHover: () => void;
-   
+
     init() {
 
         // 카드 세팅
@@ -24,8 +24,9 @@ class Deck extends Object3D {
         this.name = "deck"
         this.add(deck);
         this.setRotationFromEuler(
-            new THREE.Euler(Math.atan(1 / Math.sqrt(2)), Math.PI / 4, 0, "XYZ")
-          );
+            new THREE.Euler(isometicDegree, isometicDegree, 0, "XYZ")
+        );
+        // this.rotation.set(Math.PI / 3, Math.PI / 9, 0);
     }
 }
 
