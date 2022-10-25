@@ -24,7 +24,7 @@ function onSubmit() {
 window.onSubmit = onSubmit;
 
 function getCardDataListFromStringArr(arr) {
-  return arr.map((item, idx) => {
+  return arr.sort(() => Math.random() - 0.5).map((item, idx) => {
     return {
       name: `card-${idx}`,
       data: {

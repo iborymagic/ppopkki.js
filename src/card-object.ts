@@ -21,6 +21,7 @@ class CardObject extends Object3D {
   rotationTween: Tween<{ x: number; y: number; z: number; }>;
   positionTween: Tween<{ x: number; y: number; z: number; }>;
   flipTween: Tween<{ y: number; }>;
+  meshFront: THREE.Mesh;
 
   constructor(cardProps: CardObjectProps) {
     super();
@@ -63,9 +64,9 @@ class CardObject extends Object3D {
       .start();
   }
 
-  async render() {
-    const canvas = document.createElement("canvas");
+  async applyYGOFront() {
 
+    const canvas = document.createElement("canvas");
     const ygoCard = new Card({
       data: this.props.data,
       canvas,
@@ -74,19 +75,27 @@ class CardObject extends Object3D {
       getPic: () => this.props.pic,
     });
 
-    await ygoCard.render();
     const ygoTexture = new THREE.CanvasTexture(canvas);
+    await ygoCard.render();
+
     const ygoMaterial = new THREE.MeshBasicMaterial({
       map: ygoTexture,
     });
+
+    this.meshFront.material = ygoMaterial;
+  }
+
+  async render() {
+
 
     const cardGeometryFront = new THREE.PlaneGeometry(5, 8);
     const cardGeometryBack = new THREE.PlaneGeometry(5, 8);
     cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
 
-    const cardMeshFront = new THREE.Mesh(cardGeometryFront, ygoMaterial);
-    cardMeshFront.name = "front";
     const cardMaterial = new THREE.MeshLambertMaterial({ map: yugiohCardTextureFactory() });
+    const cardMeshFront = new THREE.Mesh(cardGeometryFront, cardMaterial);
+    this.meshFront = cardMeshFront;
+    cardMeshFront.name = "front";
     const cardMeshBack = new THREE.Mesh(cardGeometryBack, cardMaterial);
     cardMeshBack.name = "back";
 

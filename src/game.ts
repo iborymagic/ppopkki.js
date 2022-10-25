@@ -122,7 +122,6 @@ class Game {
 
   pop() {
 
-    console.log(this.cardMap)
     Object.entries(this.cardMap).forEach(([name, obj], idx) => {
       obj.visible = true;
       obj.rotationTween = new Tween({
@@ -135,6 +134,9 @@ class Game {
           obj.rotation.x = x;
           obj.rotation.y = y;
           obj.rotation.z = z;
+        })
+        .onComplete(() => {
+          obj.applyYGOFront()
         })
         .start();
 
