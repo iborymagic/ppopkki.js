@@ -31,7 +31,7 @@ class CardObject extends Object3D {
 
   onHover() {
     this.scaleTween = new Tween({ scale: 1 })
-      .to({ scale: 1.1 }, 200)
+      .to({ scale: 1.2 }, 200)
       .onUpdate(({ scale }) => {
         this.scale.set(scale, scale, scale);
         this.outline.visible = true;
@@ -87,9 +87,9 @@ class CardObject extends Object3D {
 
   async render() {
 
-
-    const cardGeometryFront = new THREE.PlaneGeometry(5, 8);
-    const cardGeometryBack = new THREE.PlaneGeometry(5, 8);
+    const scale = 1.5;
+    const cardGeometryFront = new THREE.PlaneGeometry(5 * scale, 8 * scale);
+    const cardGeometryBack = new THREE.PlaneGeometry(5 * scale, 8 * scale);
     cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
 
     const cardMaterial = new THREE.MeshLambertMaterial({ map: yugiohCardTextureFactory() });

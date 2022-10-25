@@ -16,7 +16,8 @@ class Deck extends Object3D {
         const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
 
         // 초기 박스 세팅
-        const geometry = new THREE.BoxGeometry(5, 1, 8);
+        const scale = 1.3;
+        const geometry = new THREE.BoxGeometry(5 * scale, 1 * scale, 8 * scale);
         // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         const material = new THREE.MeshBasicMaterial({ map: cardTexture });
         const deck = new THREE.Mesh(geometry, material);

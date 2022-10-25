@@ -85,6 +85,11 @@ class Game {
     // 캔버스 세팅
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    // renderer.domElement.setAttribute('style', 'width:100vw;height:100vh;')
+    const ctx = renderer.domElement.getContext('2d')
+    ctx?.scale(window.devicePixelRatio, window.devicePixelRatio);
+
     document.body.appendChild(renderer.domElement);
 
     this.camera = camera;
@@ -159,6 +164,8 @@ class Game {
           obj.position.z = z;
         })
         .start();
+
+
     });
   }
 
