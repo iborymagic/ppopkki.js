@@ -1,7 +1,7 @@
 import CardObject, { CardObjectProps } from "./card-object";
 import * as THREE from 'three';
 import Deck from "./deck";
-import TWEEN, { Tween } from '@tweenjs/tween.js';
+import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
 
 class Game {
 
@@ -143,6 +143,7 @@ class Game {
         .onComplete(() => {
           obj.applyYGOFront()
         })
+        .easing(Easing.Cubic.InOut)
         .start();
 
       const rad = (Math.PI * 2) / Object.keys(this.cardMap).length;
@@ -163,6 +164,7 @@ class Game {
           obj.position.y = y;
           obj.position.z = z;
         })
+        .easing(Easing.Cubic.InOut)
         .start();
 
 

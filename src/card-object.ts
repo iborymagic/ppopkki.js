@@ -1,4 +1,4 @@
-import { Tween } from "@tweenjs/tween.js";
+import { Tween, Easing } from "@tweenjs/tween.js";
 import * as THREE from "three";
 import { Object3D } from "three";
 import { Card, CardProps } from "ygo-card";
@@ -57,11 +57,13 @@ class CardObject extends Object3D {
     console.log('card clicked!')
 
     this.flipTween = new Tween({ y: this.rotation.y })
-      .to({ y: this.rotation.y + Math.PI }, 200)
+      .to({ y: this.rotation.y + Math.PI * 3 }, 200)
       .onUpdate(({ y }) => {
         this.rotation.y = y;
       })
-      .start();
+      .duration(1100)
+      // http://tweenjs.github.io/tween.js/examples/03_graphs.html
+      .start().easing(Easing.Quadratic.InOut);
   }
 
   async applyYGOFront() {
