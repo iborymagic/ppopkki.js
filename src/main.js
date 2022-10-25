@@ -1,7 +1,10 @@
 import * as THREE from "three";
 import { Object3D } from "three";
-import { Card } from "ygo-card";
 import TWEEN, { Tween } from "@tweenjs/tween.js";
+import Game from "./game";
+import CardObject from "./card-object";
+
+const game = new Game();
 
 function onSubmit() {
   const textarea = document.getElementById("arr");
@@ -11,7 +14,7 @@ function onSubmit() {
     if (arr.some((item) => typeof item !== "string"))
       throw new Error("입력은 현재 string의 배열만 가능합니다.");
 
-    startGameWithStringArr(arr);
+    game.prepareCards(getCardDataListFromStringArr(arr));
     const input = document.getElementById("input");
     if (input) input.style = "display: none;";
     const jump = document.getElementById("jump");
@@ -22,44 +25,10 @@ function onSubmit() {
 }
 
 function jumpingCards() {
-  window.deck.visible = false;
+  game.pop();
   const jump = document.getElementById("jump");
   if (jump) jump.style.visibility = "hidden";
-  Object.entries(window.cards).forEach(([name, obj], idx) => {
-    obj.visible = true;
-    obj.rotationTween = new Tween({
-      x: obj.rotation.x,
-      y: obj.rotation.y,
-      z: obj.rotation.z,
-    })
-      .to({ x: 0, y: Math.PI, z: 0 })
-      .onUpdate(({ x, y, z }) => {
-        obj.rotation.x = x;
-        obj.rotation.y = y;
-        obj.rotation.z = z;
-      })
-      .start();
 
-    const rad = (Math.PI * 2) / Object.keys(window.cards).length;
-    const radOffset = Math.PI / 2;
-
-    obj.positiontween = new Tween({
-      x: 0,
-      y: 0,
-      z: 0,
-    })
-      .to({
-        x: 12 * Math.cos(rad * idx + radOffset),
-        y: 12 * Math.sin(rad * idx + radOffset),
-        z: 0,
-      })
-      .onUpdate(({ x, y, z }) => {
-        obj.position.x = x;
-        obj.position.y = y;
-        obj.position.z = z;
-      })
-      .start();
-  });
 }
 window.jumpingCards = jumpingCards;
 window.onSubmit = onSubmit;
@@ -86,237 +55,51 @@ function getCardDataListFromStringArr(arr) {
   });
 }
 
-async function startGameWithStringArr(arr) {
-  const cardDataList = getCardDataListFromStringArr(arr);
-  const scene = new THREE.Scene();
 
-  // 카메라 세팅
-  const camera = new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth / window.innerHeight,
-    1,
-    500
-  );
-  camera.position.set(0, 0, 50);
-  camera.lookAt(scene.position);
-  camera.updateMatrixWorld();
+let hoveredName = null;
 
-  // 캔버스 세팅
-  const renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
 
-  // 카드 세팅
-  const cardTexture = new THREE.TextureLoader().load("./yugioh-card-back.jpeg");
-  cardTexture.wrapS = THREE.RepeatWrapping;
-  cardTexture.wrapT = THREE.RepeatWrapping;
-  const cardMaterial = new THREE.MeshLambertMaterial({ map: cardTexture });
+// raycaster
+const mouse = new THREE.Vector2();
+const raycaster = new THREE.Raycaster();
 
-  // 초기 박스 세팅
-  const geometry = new THREE.BoxGeometry(5, 1, 8);
-  // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-  const material = new THREE.MeshBasicMaterial({ map: cardTexture });
+const onMouseMove = (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, game.camera);
 
-  const deckObject = new Object3D();
-  const deck = new THREE.Mesh(geometry, material);
-  deckObject.name = "deck";
-  deckObject.add(deck);
-  deck.setRotationFromEuler(
-    new THREE.Euler(Math.atan(1 / Math.sqrt(2)), Math.PI / 4, 0, "XYZ")
-  );
-  scene.add(deck);
-  window.deck = deck;
+  const intersects = raycaster.intersectObjects(game.scene.children);
 
-  // 양면 카드 세팅
-  const cards = {};
-  window.cards = cards;
+  if (intersects.length > 0) {
+    const parent = intersects[0].object.parent;
+    console.log(parent.name, parent);
 
-  let hoveredName = null;
+    if (!parent.name) return;
 
-  await Promise.all(
-    cardDataList.map(async (cardData, idx) => {
-      const canvas = document.createElement("canvas");
-
-      const ygoCard = new Card({
-        data: cardData.data,
-        canvas,
-        size: [400 * window.devicePixelRatio, 584 * window.devicePixelRatio],
-        moldPath: "./mold",
-        getPic: () => cardData.pic,
-      });
-
-      await ygoCard.render();
-
-      const ygoTexture = new THREE.CanvasTexture(canvas);
-      const ygoMaterial = new THREE.MeshBasicMaterial({
-        map: ygoTexture,
-      });
-
-      const cardGeometryFront = new THREE.PlaneGeometry(5, 8);
-      const cardGeometryBack = new THREE.PlaneGeometry(5, 8);
-      cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
-
-      const card = new Object3D();
-
-      const name = `card${idx}`;
-      card.name = name;
-      const cardMeshFront = new THREE.Mesh(cardGeometryFront, ygoMaterial);
-      cardMeshFront.name = "front";
-      const cardMeshBack = new THREE.Mesh(cardGeometryBack, cardMaterial);
-      cardMeshBack.name = "back";
-
-      card.add(cardMeshFront);
-      card.add(cardMeshBack);
-
-      const outline = new THREE.LineSegments(
-        new THREE.EdgesGeometry(cardGeometryBack),
-        new THREE.LineBasicMaterial({ color: 0x00ff00 })
-      );
-      outline.visible = false;
-      card.add(outline);
-
-      // card.position.set(
-      //   12 * Math.cos(rad * idx + radOffset),
-      //   12 * Math.sin(rad * idx + radOffset),
-      //   0
-      // );
-      // card.rotation.set(0, Math.PI, 0);
-      card.setRotationFromEuler(
-        new THREE.Euler(Math.atan(1 / Math.sqrt(2)), Math.PI / 4, 0, "XYZ")
-      );
-      scene.add(card);
-      card.visible = false;
-      cards[name] = card;
-    })
-  );
-
-  // https://threejs.org/docs/#api/en/textures/CanvasTexture
-
-  // 조명: 안보이지 않게 하기위해 여섯 방향에서 다 쏘는중
-  const zPosAmbLight = new THREE.DirectionalLight(0xffffff, 1);
-  zPosAmbLight.position.set(0, 0, 1);
-  scene.add(zPosAmbLight);
-
-  const zNegAmbLight = new THREE.DirectionalLight(0xffffff, 1);
-  zNegAmbLight.position.set(0, 0, -1);
-  scene.add(zNegAmbLight);
-
-  const yPosAmbLight = new THREE.DirectionalLight(0xffffff, 1);
-  yPosAmbLight.position.set(0, 1, 0);
-  scene.add(yPosAmbLight);
-
-  const yNegAmbLight = new THREE.DirectionalLight(0xffffff, 1);
-  yNegAmbLight.position.set(0, -1, 0);
-  scene.add(yNegAmbLight);
-
-  const xPosAmbLight = new THREE.DirectionalLight(0xffffff, 1);
-  xPosAmbLight.position.set(1, 0, 0);
-  scene.add(xPosAmbLight);
-
-  const xNegAmbLight = new THREE.DirectionalLight(0xffffff, 1);
-  xNegAmbLight.position.set(-1, 0, 0);
-  scene.add(xNegAmbLight);
-
-  function resizeRendererToDisplaySize(renderer) {
-    const canvas = renderer.domElement;
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    const needResize = canvas.width !== width || canvas.height !== height;
-    if (needResize) {
-      renderer.setSize(width, height, false);
-    }
-    return needResize;
-  }
-
-  // raycaster
-  const mouse = new THREE.Vector2();
-  const raycaster = new THREE.Raycaster();
-
-  console.log(cards);
-
-  const onMouseMove = (e) => {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    raycaster.setFromCamera(mouse, camera);
-
-    const intersects = raycaster.intersectObjects(scene.children);
-
-    if (intersects.length > 0) {
-      const parent = intersects[0].object.parent;
-      console.log(parent.name, parent);
-
-      if (!parent.name) return;
-      if (parent.name === "deck") {
-        hoveredName = "deck";
-        return;
-      }
-
-      if (hoveredName !== parent.name && hoveredName !== "deck") {
-        if (hoveredName in cards && "tween" in cards[hoveredName]) {
-          const card = cards[hoveredName];
-          card.tween.stop();
-          card.tween = new Tween({ scale: card.scale.x })
-            .to({ scale: 1 }, 150)
-            .onUpdate(({ scale }) => {
-              card.scale.set(scale, scale, scale);
-
-              const outline = card.children.find(
-                (child) => child.type === "LineSegments"
-              );
-              if (outline) outline.visible = false;
-            })
-            .start();
-        }
-
-        cards[parent.name].tween = new Tween({ scale: 1 })
-          .to({ scale: 1.1 }, 200)
-          .onUpdate(({ scale }) => {
-            cards[parent.name].scale.set(scale, scale, scale);
-
-            const outline = cards[parent.name].children.find(
-              (child) => child.type === "LineSegments"
-            );
-            if (outline) outline.visible = true;
-          })
-          .start();
-        hoveredName = parent.name;
-      }
-    }
-  };
-
-  const onMouseDown = () => {
-    if (!hoveredName) return;
-
-    if (hoveredName === "deck") {
-      console.log("move decks!");
+    parent.onHover();
+    if (parent.name === "deck") {
+      parent
+      hoveredName = "deck";
       return;
     }
-    const card = cards[hoveredName];
-    if (!card) return;
 
-    card.flipTween = new Tween({ y: card.rotation.y })
-      .to({ y: card.rotation.y + Math.PI }, 200)
-      .onUpdate(({ y }) => {
-        card.rotation.y = y;
-      })
-      .start();
-  };
-  window.addEventListener("mousemove", onMouseMove);
-  window.addEventListener("mousedown", onMouseDown);
-
-  // 그리기
-  function animate() {
-    requestAnimationFrame(animate);
-
-    if (resizeRendererToDisplaySize(renderer)) {
-      const canvas = renderer.domElement;
-      camera.aspect = canvas.clientWidth / canvas.clientHeight;
-      camera.updateProjectionMatrix();
+    if (parent instanceof CardObject) {
+      game.onHoverCardObject(parent.name);
     }
-
-    renderer.render(scene, camera);
-    TWEEN.update();
   }
+};
 
-  animate();
-}
+const onMouseDown = (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, game.camera);
+
+  const intersects = raycaster.intersectObjects(game.scene.children);
+
+  if (intersects.length > 0) {
+    const parent = intersects[0].object.parent;
+    parent.onClick();
+  }
+};
+window.addEventListener("mousemove", onMouseMove);
+window.addEventListener("mousedown", onMouseDown);
