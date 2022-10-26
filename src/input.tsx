@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type Item = {
   id: number;
   name: string;
   url: string;
 };
+
+const STORAGE_KEY = "table";
 
 declare global {
   interface Window {
@@ -25,8 +27,24 @@ const defaultItem = {
   url: "",
 };
 
+const isItems = (value: unknown): value is Item[] => {
+  if (typeof value !== "object") return false;
+  if (!Array.isArray(value)) return false;
+  return value.every((item) => {
+    return (
+      "id" in item &&
+      "name" in item &&
+      "url" in item &&
+      typeof item.id === "number" &&
+      typeof item.name === "string" &&
+      typeof item.url === "string"
+    );
+  });
+};
+
 function Input() {
   const [items, setItems] = useState<Item[]>([defaultItem]);
+
   const removeState = (id: number) => {
     setItems((items) => items.filter((item) => item.id !== id));
   };
@@ -44,6 +62,20 @@ function Input() {
   const getIdForName = (id: number) => id + "name";
   const getIdForURL = (id: number) => id + "url";
 
+  useEffect(() => {
+    try {
+      const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "");
+      console.log({ arr, isItems: isItems(arr) });
+      if (isItems(arr)) {
+        setItems(arr);
+      }
+    } catch (e) {
+      console.error(e);
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }, []);
+  console.log({ items });
+
   return (
     <>
       <form>
@@ -59,10 +91,16 @@ function Input() {
               return (
                 <tr key={item.id}>
                   <td>
-                    <input id={getIdForName(item.id)}></input>
+                    <input
+                      id={getIdForName(item.id)}
+                      defaultValue={item.name}
+                    ></input>
                   </td>
                   <td>
-                    <input id={getIdForURL(item.id)}></input>
+                    <input
+                      id={getIdForURL(item.id)}
+                      defaultValue={item.url}
+                    ></input>
                   </td>
                   <td>
                     {items.length > 1 && (
@@ -98,6 +136,18 @@ function Input() {
                 };
               });
 
+              const itemsForStorage: Item[] = result.map((item, idx) => {
+                return {
+                  id: idx,
+                  name: item.data.name ?? "",
+                  url: item.pic ?? "",
+                };
+              });
+
+              window.localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(itemsForStorage)
+              );
               window.onSubmit(result, form["n"]?.value ?? 1);
             }}
           >
