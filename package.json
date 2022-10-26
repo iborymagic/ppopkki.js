@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/react": "^18.0.23",
+    "@types/react-dom": "^18.0.7",
     "@types/three": "^0.144.0",
     "vite": "^3.0.7"
   },
@@ -16,6 +18,8 @@
     "@tweenjs/tween.js": "^18.6.4",
     "lil-gui": "^0.17.0",
     "lodash-es": "^4.17.21",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "three": "^0.143.0",
     "ygo-card": "^1.4.1-4"
   }
