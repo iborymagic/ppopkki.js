@@ -2,16 +2,17 @@ import * as THREE from "three";
 import Game from "./game";
 import CardObject from "./card-object";
 import { merge } from "lodash-es";
+import React from 'react';
+import Input from './input';
+
+import { createRoot } from "react-dom/client";
 // import GUI from 'lil-gui';
 
 const game = new Game();
+const root = createRoot(document.querySelector('div#input'));
+root.render(<Input></Input>);
 
-const textarea = document.getElementById("arr");
-const nInput = document.getElementById("n");
-const sampleData = [{ "data": { "name": "수현" } }, { "data": { "name": "현철" } }, { "data": { "name": "agrajak" }, "pic": "https://images.squarespace-cdn.com/content/v1/56e0f44160b5e96aec2019f3/1545175398584-PQZBH193NCEI1SC1RQR7/poo-emoji" }]
 
-textarea.setAttribute('placeHolder', JSON.stringify(sampleData));
-textarea.value = JSON.stringify(sampleData);
 
 function onSubmit() {
   if (!textarea) return;
@@ -26,6 +27,7 @@ function onSubmit() {
 }
 
 window.onSubmit = onSubmit;
+window.addTR = addTR;
 
 function getCardDataListFromStringArr(arr, n) {
   return arr.sort(() => Math.random() - 0.5).slice(0, n).map((item, idx) => {
