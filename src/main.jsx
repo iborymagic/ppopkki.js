@@ -13,12 +13,9 @@ const root = createRoot(document.querySelector('div#input'));
 root.render(<Input></Input>);
 
 
-
-function onSubmit() {
-  if (!textarea) return;
+function onSubmit(arr, n) {
   try {
-    const arr = JSON.parse(textarea.value);
-    game.prepareCards(getCardDataListFromStringArr(arr, Math.min(nInput?.value ?? 1, arr.length)));
+    game.prepareCards(getCardDataListFromStringArr(arr, n));
     const input = document.getElementById("input");
     if (input) input.style = "display: none;";
   } catch (e) {
@@ -27,7 +24,6 @@ function onSubmit() {
 }
 
 window.onSubmit = onSubmit;
-window.addTR = addTR;
 
 function getCardDataListFromStringArr(arr, n) {
   return arr.sort(() => Math.random() - 0.5).slice(0, n).map((item, idx) => {
