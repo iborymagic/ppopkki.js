@@ -1,32 +1,27 @@
 import CardObject, { CardObjectProps } from "./card-object";
-import * as THREE from 'three';
+import * as THREE from "three";
 import Deck from "./deck";
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
 
 class Game {
-
   hoveredName: string | null = null;
 
   cardMap: Record<string, CardObject>;
   scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera;
+  camera: THREE.OrthographicCamera;
   renderer: THREE.WebGLRenderer;
   deck: Deck;
   mouse = new THREE.Vector2();
   rayCaster = new THREE.Raycaster();
 
   onHoverCardObject(name: string | null) {
-
     const beforeName = this.hoveredName;
     if (beforeName !== name) {
-
       if (name && name in this.cardMap) {
-
         const card = this.cardMap[name];
-        card.onHover();
+        card.onHover(this.scene);
         this.hoveredName = name;
         return;
-
       }
 
       if (beforeName && beforeName in this.cardMap) {
@@ -34,7 +29,6 @@ class Game {
         this.hoveredName = name;
         card.onUnHover();
       }
-
     }
   }
   constructor() {
@@ -68,12 +62,7 @@ class Game {
     scene.add(xNegAmbLight);
 
     // 카메라 세팅
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      window.innerWidth / window.innerHeight,
-      1,
-      500
-    );
+    const camera = new THREE.OrthographicCamera(-25, 25, 25, -25, 1, 500);
     camera.position.set(0, 0, 50);
     camera.lookAt(scene.position);
     camera.updateMatrixWorld();
@@ -87,7 +76,7 @@ class Game {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     // renderer.domElement.setAttribute('style', 'width:100vw;height:100vh;')
-    const ctx = renderer.domElement.getContext('2d')
+    const ctx = renderer.domElement.getContext("2d");
     ctx?.scale(window.devicePixelRatio, window.devicePixelRatio);
 
     document.body.appendChild(renderer.domElement);
@@ -98,8 +87,7 @@ class Game {
     this.deck = deck;
     this.renderer = renderer;
     this.cardMap = {};
-    this.animate = this.animate.bind(this)
-
+    this.animate = this.animate.bind(this);
   }
 
   async prepareCards(cardProps: CardObjectProps[]) {
@@ -107,26 +95,26 @@ class Game {
       cardProps.map((cardProp, idx) => {
         const card = new CardObject({
           ...cardProp,
-          name: `card-${idx}`
+          name: `card-${idx}`,
         });
 
         this.cardMap[cardProp.name] = card;
         return card.render();
-      }));
+      })
+    );
 
     this.animate();
 
     this.deck.onClick = () => {
-      Object.values(this.cardMap).forEach(card => {
+      Object.values(this.cardMap).forEach((card) => {
         this.scene.add(card);
-      })
+      });
       this.deck.visible = false;
       this.pop();
-    }
+    };
   }
 
   pop() {
-
     Object.entries(this.cardMap).forEach(([name, obj], idx) => {
       obj.visible = true;
       obj.rotationTween = new Tween({
@@ -141,7 +129,7 @@ class Game {
           obj.rotation.z = z;
         })
         .onComplete(() => {
-          obj.applyYGOFront()
+          obj.applyYGOFront();
         })
         .easing(Easing.Cubic.InOut)
         .start();
@@ -166,8 +154,6 @@ class Game {
         })
         .easing(Easing.Cubic.InOut)
         .start();
-
-
     });
   }
 
@@ -176,7 +162,7 @@ class Game {
 
     if (resizeRendererToDisplaySize(this.renderer)) {
       const canvas = this.renderer.domElement;
-      this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      // this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
       this.camera.updateProjectionMatrix();
     }
 
@@ -184,7 +170,6 @@ class Game {
     TWEEN.update();
   }
 }
-
 
 function resizeRendererToDisplaySize(renderer: THREE.WebGLRenderer) {
   const canvas = renderer.domElement;
