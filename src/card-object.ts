@@ -20,7 +20,7 @@ export function yugiohCardTextureFactory(): THREE.Texture {
 class CardObject extends Object3D {
   props: CardObjectProps;
   outline: THREE.LineSegments;
-  particleSystem: any;
+  glareParticleSystem: any;
   scaleTween: Tween<{ scale: number }>;
   rotationTween: Tween<{ x: number; y: number; z: number }>;
   positionTween: Tween<{ x: number; y: number; z: number }>;
@@ -31,12 +31,27 @@ class CardObject extends Object3D {
     super();
     this.props = cardProps;
     this.name = this.props.name;
-    this.animateParticle = this.animateParticle.bind(this);
+    this.animateGlareEffect = this.animateGlareEffect.bind(this);
+    this.removeGlareEffect = this.removeGlareEffect.bind(this);
   }
 
-  animateParticle(nebula) {
-    requestAnimationFrame(() => this.animateParticle(nebula));
+  animateGlareEffect(nebula) {
+    requestAnimationFrame(() => this.animateGlareEffect(nebula));
     nebula.update();
+  }
+
+  removeGlareEffect() {
+    if (this.glareParticleSystem) {
+      this.glareParticleSystem.emitters.forEach((emitter) => {
+        emitter.stopEmit();
+        emitter.particles.forEach((particle) => {
+          particle.target.removeFromParent();
+          particle.destroy();
+        });
+      });
+
+      this.glareParticleSystem = null;
+    }
   }
 
   onHover(scene: THREE.Scene) {
@@ -49,7 +64,7 @@ class CardObject extends Object3D {
       .start();
 
     Nebula.fromJSONAsync(emitter.particleSystemState, THREE).then((system) => {
-      this.particleSystem = system;
+      this.glareParticleSystem = system;
       const nebulaRenderer = new SpriteRenderer(scene, THREE);
       const nebula = system.addRenderer(nebulaRenderer);
       system.emitters.forEach((emitter, idx) => {
@@ -60,7 +75,7 @@ class CardObject extends Object3D {
         });
       });
 
-      this.animateParticle(nebula);
+      this.animateGlareEffect(nebula);
     });
   }
 
@@ -76,31 +91,12 @@ class CardObject extends Object3D {
         .start();
     }
 
-    // particle 효과 삭제
-    if (this.particleSystem) {
-      this.particleSystem.emitters.forEach((emitter) => {
-        emitter.stopEmit();
-        emitter.particles.forEach((particle) => {
-          particle.target.removeFromParent();
-          particle.destroy();
-        });
-      });
-    }
+    this.removeGlareEffect();
   }
 
   onClick() {
     console.log("card clicked!");
-
-    // particle 효과 삭제
-    if (this.particleSystem) {
-      this.particleSystem.emitters.forEach((emitter) => {
-        emitter.stopEmit();
-        emitter.particles.forEach((particle) => {
-          particle.target.removeFromParent();
-          particle.destroy();
-        });
-      });
-    }
+    this.removeGlareEffect();
 
     console.log(this.props)
 
