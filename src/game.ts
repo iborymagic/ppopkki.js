@@ -5,6 +5,7 @@ import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
 
 class Game {
   hoveredName: string | null = null;
+  hasCardSettingCompleted = false;
 
   cardMap: Record<string, CardObject>;
   scene: THREE.Scene;
@@ -19,7 +20,9 @@ class Game {
     if (beforeName !== name) {
       if (name && name in this.cardMap) {
         const card = this.cardMap[name];
-        card.onHover(this.scene);
+        if (this.hasCardSettingCompleted) {
+          card.onHover(this.scene);
+        }
         this.hoveredName = name;
         return;
       }
@@ -129,6 +132,7 @@ class Game {
           obj.rotation.z = z;
         })
         .onComplete(() => {
+          this.hasCardSettingCompleted = true;
           obj.applyYGOFront();
         })
         .easing(Easing.Cubic.InOut)
