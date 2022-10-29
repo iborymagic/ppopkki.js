@@ -69,24 +69,30 @@ class CardObject extends Object3D {
   }
 
   async applyYGOFront() {
-
     const canvas = document.createElement("canvas");
-    const ygoCard = new Card({
-      data: this.props.data,
-      canvas,
-      size: [400 * window.devicePixelRatio, 584 * window.devicePixelRatio],
-      moldPath: "./mold",
-      getPic: () => this.props.pic,
-    });
+    const waitCardPicLoad = () => {
+      return new Promise<Card>((resolve) => {
+        const ygoCard = new Card({
+          data: this.props.data,
+          canvas,
+          size: [400 * devicePixelRatio, 584 * devicePixelRatio],
+          moldPath: "./mold",
+          getPic: () => this.props.pic,
+          picLoaded: () => resolve(ygoCard),
+        });
+        ygoCard.render();
+      })
+    }
 
-    const ygoTexture = new THREE.CanvasTexture(canvas);
-    await ygoCard.render();
+    return waitCardPicLoad().then(() => {
 
-    const ygoMaterial = new THREE.MeshBasicMaterial({
-      map: ygoTexture,
-    });
+      const ygoTexture = new THREE.CanvasTexture(canvas);
 
-    this.meshFront.material = ygoMaterial;
+      const ygoMaterial = new THREE.MeshBasicMaterial({
+        map: ygoTexture,
+      });
+      this.meshFront.material = ygoMaterial;
+    })
   }
 
   async render() {
