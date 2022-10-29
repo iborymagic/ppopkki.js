@@ -132,8 +132,8 @@ class CardObject extends Object3D {
 
   async render() {
     const scale = 1.5;
-    const cardGeometryFront = new THREE.PlaneGeometry(4 * scale, 8 * scale);
-    const cardGeometryBack = new THREE.PlaneGeometry(4 * scale, 8 * scale);
+    const cardGeometryFront = new THREE.PlaneGeometry(5 * scale, 8 * scale);
+    const cardGeometryBack = new THREE.PlaneGeometry(5 * scale, 8 * scale);
     cardGeometryBack.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));
 
     const cardMaterial = new THREE.MeshLambertMaterial({

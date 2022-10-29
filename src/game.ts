@@ -65,7 +65,14 @@ class Game {
     scene.add(xNegAmbLight);
 
     // 카메라 세팅
-    const camera = new THREE.OrthographicCamera(-25, 25, 25, -25, 1, 500);
+    const camera = new THREE.OrthographicCamera(
+      -window.innerWidth / 45,
+      window.innerWidth / 45,
+      window.innerHeight / 45,
+      -window.innerHeight / 45,
+      1,
+      1000
+    );
     camera.position.set(0, 0, 50);
     camera.lookAt(scene.position);
     camera.updateMatrixWorld();
@@ -167,7 +174,6 @@ class Game {
     if (resizeRendererToDisplaySize(this.renderer)) {
       const canvas = this.renderer.domElement;
       // this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
-      this.camera.updateProjectionMatrix();
     }
 
     this.renderer.render(this.scene, this.camera);
