@@ -70,7 +70,7 @@ class CardObject extends Object3D {
       system.emitters.forEach((emitter, idx) => {
         emitter.setPosition({
           x: this.position.x,
-          y: this.position.y - (idx - 1) * 4, // particle emitter 적절한 위치 찾아보기
+          y: this.position.y - (idx - 1) * 3, // particle emitter 적절한 위치 찾아보기
           z: this.position.z - 8,
         });
       });
