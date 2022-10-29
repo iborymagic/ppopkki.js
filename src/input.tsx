@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import {nanoid} from 'nanoid';
 
 type Item = {
-  id: number;
+  checked: boolean;
+  id: string;
   name: string;
   url: string;
 };
@@ -21,10 +23,11 @@ declare global {
     ) => void;
   }
 }
-const defaultItem = {
-  id: 0,
+const defaultItem: Item = {
+  id: nanoid(),
   name: "",
   url: "",
+  checked: true,
 };
 
 const isItems = (value: unknown): value is Item[] => {
@@ -35,9 +38,11 @@ const isItems = (value: unknown): value is Item[] => {
       "id" in item &&
       "name" in item &&
       "url" in item &&
-      typeof item.id === "number" &&
+      "checked" in item &&
+      typeof item.id === "string" &&
       typeof item.name === "string" &&
-      typeof item.url === "string"
+      typeof item.url === "string" &&
+      typeof item.checked == "boolean"
     );
   });
 };
@@ -45,7 +50,7 @@ const isItems = (value: unknown): value is Item[] => {
 function Input() {
   const [items, setItems] = useState<Item[]>([defaultItem]);
 
-  const removeState = (id: number) => {
+  const removeState = (id: string) => {
     setItems((items) => items.filter((item) => item.id !== id));
   };
 
@@ -54,13 +59,14 @@ function Input() {
       ...items,
       {
         ...defaultItem,
-        id: Math.max(...items.map((x) => x.id)) + 1,
+        id: nanoid()
       },
     ]);
   };
 
-  const getIdForName = (id: number) => id + "name";
-  const getIdForURL = (id: number) => id + "url";
+  const getIdForName = (id: string) => id + "name";
+  const getIdForURL = (id: string) => id + "url";
+  const getIdForCheck = (id: string) => id + "checked";
 
   useEffect(() => {
     try {
@@ -74,22 +80,29 @@ function Input() {
       localStorage.removeItem(STORAGE_KEY);
     }
   }, []);
-  console.log({ items });
 
   return (
     <>
       <form>
         <table>
           <thead>
+            <th> </th>
             <th>이름(required)</th>
             <th>이미지 주소(optional)</th>
-            <th></th>
+            <th> </th>
           </thead>
           <tbody>
             {items.map((item, idx) => {
               const isLastRow = idx === items.length - 1;
               return (
                 <tr key={item.id}>
+                  <td>
+                    <input
+                    type="checkbox"
+                    id={getIdForCheck(item.id)}
+                    defaultChecked={item.checked}
+                    ></input>
+                  </td>
                   <td>
                     <input
                       id={getIdForName(item.id)}
@@ -128,19 +141,22 @@ function Input() {
               const result = items.map((item) => {
                 const name = form[getIdForName(item.id)]?.value ?? "";
                 const url = form[getIdForURL(item.id)]?.value ?? "";
+                const checked = form[getIdForCheck(item.id)]?.checked ?? false;
                 return {
                   data: {
                     name,
                   },
                   pic: url,
+                  checked
                 };
               });
 
               const itemsForStorage: Item[] = result.map((item, idx) => {
                 return {
-                  id: idx,
+                  id: nanoid(),
                   name: item.data.name ?? "",
                   url: item.pic ?? "",
+                  checked: item.checked ?? false,
                 };
               });
 
@@ -148,7 +164,7 @@ function Input() {
                 STORAGE_KEY,
                 JSON.stringify(itemsForStorage)
               );
-              window.onSubmit(result, form["n"]?.value ?? 1);
+              window.onSubmit(result.filter(x=>x.checked), form["n"]?.value ?? 1);
             }}
           >
             가즈아

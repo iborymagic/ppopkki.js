@@ -78,6 +78,8 @@ const onMouseMove = (e) => {
 
   const intersects = raycaster.intersectObjects(game.scene.children);
 
+  if(!game.hasCardLoaded) return;
+
   if (intersects.length > 0) {
     const parent = intersects[0].object.parent;
 
@@ -100,6 +102,7 @@ const onMouseDown = (e) => {
 
   if (intersects.length > 0) {
     const parent = intersects[0].object.parent;
+    if(parent instanceof CardObject && !game.hasCardLoaded) return;
     if (parent.onClick) parent.onClick();
   }
 };
