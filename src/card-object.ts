@@ -4,7 +4,8 @@ import { Object3D } from "three";
 import { Card, CardProps } from "ygo-card";
 import { isometicDegree } from "./deck";
 import Nebula from "three-nebula";
-import emitter from "./light.json";
+import lightEmitter from "./light.json";
+import fireEmitter from "./fire.json";
 import { SpriteRenderer } from "three-nebula/build/cjs/renderer";
 
 export type CardObjectProps = CardProps & { pic: string; name: string };
@@ -21,6 +22,7 @@ class CardObject extends Object3D {
   props: CardObjectProps;
   outline: THREE.LineSegments;
   glareParticleSystem: any;
+  fireParticleSystem: any;
   scaleTween: Tween<{ scale: number }>;
   rotationTween: Tween<{ x: number; y: number; z: number }>;
   positionTween: Tween<{ x: number; y: number; z: number }>;
@@ -31,12 +33,12 @@ class CardObject extends Object3D {
     super();
     this.props = cardProps;
     this.name = this.props.name;
-    this.animateGlareEffect = this.animateGlareEffect.bind(this);
+    this.animateParticleEffect = this.animateParticleEffect.bind(this);
     this.removeGlareEffect = this.removeGlareEffect.bind(this);
   }
 
-  animateGlareEffect(nebula) {
-    requestAnimationFrame(() => this.animateGlareEffect(nebula));
+  animateParticleEffect(nebula) {
+    requestAnimationFrame(() => this.animateParticleEffect(nebula));
     nebula.update();
   }
 
@@ -63,20 +65,22 @@ class CardObject extends Object3D {
       })
       .start();
 
-    Nebula.fromJSONAsync(emitter.particleSystemState, THREE).then((system) => {
-      this.glareParticleSystem = system;
-      const nebulaRenderer = new SpriteRenderer(scene, THREE);
-      const nebula = system.addRenderer(nebulaRenderer);
-      system.emitters.forEach((emitter, idx) => {
-        emitter.setPosition({
-          x: this.position.x,
-          y: this.position.y - (idx - 1) * 3,
-          z: this.position.z - 8,
+    Nebula.fromJSONAsync(lightEmitter.particleSystemState, THREE).then(
+      (system) => {
+        this.glareParticleSystem = system;
+        const nebulaRenderer = new SpriteRenderer(scene, THREE);
+        const nebula = system.addRenderer(nebulaRenderer);
+        system.emitters.forEach((emitter, idx) => {
+          emitter.setPosition({
+            x: this.position.x,
+            y: this.position.y - (idx - 1) * 3,
+            z: this.position.z - 8,
+          });
         });
-      });
 
-      this.animateGlareEffect(nebula);
-    });
+        this.animateParticleEffect(nebula);
+      }
+    );
   }
 
   onUnHover() {
@@ -94,9 +98,26 @@ class CardObject extends Object3D {
     this.removeGlareEffect();
   }
 
-  onClick() {
+  onClick(scene: THREE.Scene) {
     console.log("card clicked!");
     this.removeGlareEffect();
+
+    Nebula.fromJSONAsync(fireEmitter.particleSystemState, THREE).then(
+      (system) => {
+        this.fireParticleSystem = system;
+        const nebulaRenderer = new SpriteRenderer(scene, THREE);
+        const nebula = system.addRenderer(nebulaRenderer);
+        system.emitters.forEach((emitter) => {
+          emitter.setPosition({
+            x: this.position.x + 3,
+            y: this.position.y - 5,
+            z: this.position.z - 2,
+          });
+        });
+
+        this.animateParticleEffect(nebula);
+      }
+    );
 
     this.flipTween = new Tween({ y: this.rotation.y })
       .to({ y: this.rotation.y + Math.PI * 3 }, 200)

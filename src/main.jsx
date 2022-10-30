@@ -104,7 +104,7 @@ const onMouseDown = (e) => {
 
   if (intersects.length > 0) {
     const parent = intersects[0].object.parent;
-    if (parent.onClick) parent.onClick();
+    if (parent.onClick) parent.onClick(game.scene);
   }
 };
 
