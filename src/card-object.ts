@@ -70,7 +70,7 @@ class CardObject extends Object3D {
       system.emitters.forEach((emitter, idx) => {
         emitter.setPosition({
           x: this.position.x,
-          y: this.position.y - (idx - 1) * 3, // particle emitter 적절한 위치 찾아보기
+          y: this.position.y - (idx - 1) * 3,
           z: this.position.z - 8,
         });
       });
@@ -98,8 +98,6 @@ class CardObject extends Object3D {
     console.log("card clicked!");
     this.removeGlareEffect();
 
-    console.log(this.props)
-
     this.flipTween = new Tween({ y: this.rotation.y })
       .to({ y: this.rotation.y + Math.PI * 3 }, 200)
       .onUpdate(({ y }) => {
@@ -107,7 +105,8 @@ class CardObject extends Object3D {
       })
       .duration(1100)
       // http://tweenjs.github.io/tween.js/examples/03_graphs.html
-      .start().easing(Easing.Quadratic.InOut);
+      .start()
+      .easing(Easing.Quadratic.InOut);
   }
 
   async applyYGOFront() {
