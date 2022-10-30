@@ -14,8 +14,11 @@ class Game {
   deck: Deck;
   mouse = new THREE.Vector2();
   rayCaster = new THREE.Raycaster();
+  hasCardLoaded = false;
 
   onHoverCardObject(name: string | null) {
+
+    if (!this.hasCardLoaded) return;
     const beforeName = this.hoveredName;
     if (beforeName !== name) {
       if (name && name in this.cardMap) {
@@ -115,56 +118,65 @@ class Game {
 
     this.animate();
 
-    this.deck.onClick = () => {
-      Object.values(this.cardMap).forEach((card) => {
+    this.deck.onClick = async () => {
+      const cards = Object.values(this.cardMap);
+      cards.forEach(card => {
         this.scene.add(card);
       });
       this.deck.visible = false;
+
+      await this.pop();
+      await Promise.all(cards.map(card=>card.applyYGOFront));
+
+      this.hasCardLoaded = true;
       this.pop();
     };
   }
+  
+  async pop() {
+    return new Promise<void>((resolve) => {
 
-  pop() {
-    Object.entries(this.cardMap).forEach(([name, obj], idx) => {
-      obj.visible = true;
-      obj.rotationTween = new Tween({
-        x: obj.rotation.x,
-        y: obj.rotation.y,
-        z: obj.rotation.z,
-      })
-        .to({ x: 0, y: Math.PI, z: 0 })
-        .onUpdate(({ x, y, z }) => {
-          obj.rotation.x = x;
-          obj.rotation.y = y;
-          obj.rotation.z = z;
+      Object.entries(this.cardMap).forEach(([name, obj], idx) => {
+        obj.visible = true;
+        obj.rotationTween = new Tween({
+          x: obj.rotation.x,
+          y: obj.rotation.y,
+          z: obj.rotation.z,
         })
-        .onComplete(() => {
-          this.hasCardSettingCompleted = true;
-          obj.applyYGOFront();
-        })
-        .easing(Easing.Cubic.InOut)
-        .start();
+          .to({ x: 0, y: Math.PI, z: 0 })
+          .onUpdate(({ x, y, z }) => {
+            obj.rotation.x = x;
+            obj.rotation.y = y;
+            obj.rotation.z = z;
+          })
+          .onComplete(() => {
+            resolve();
+            obj.applyYGOFront()
+          })
+          .easing(Easing.Cubic.InOut)
+          .start();
 
-      const rad = (Math.PI * 2) / Object.keys(this.cardMap).length;
-      const radOffset = Math.PI / 2;
+        const rad = (Math.PI * 2) / Object.keys(this.cardMap).length;
+        const radOffset = Math.PI / 2;
 
-      obj.positionTween = new Tween({
-        x: 0,
-        y: 0,
-        z: 0,
-      })
-        .to({
-          x: 12 * Math.cos(rad * idx + radOffset),
-          y: 12 * Math.sin(rad * idx + radOffset),
+        obj.positionTween = new Tween({
+          x: 0,
+          y: 0,
           z: 0,
         })
-        .onUpdate(({ x, y, z }) => {
-          obj.position.x = x;
-          obj.position.y = y;
-          obj.position.z = z;
-        })
-        .easing(Easing.Cubic.InOut)
-        .start();
+          .to({
+            x: 12 * Math.cos(rad * idx + radOffset),
+            y: 12 * Math.sin(rad * idx + radOffset),
+            z: 0,
+          })
+          .onUpdate(({ x, y, z }) => {
+            obj.position.x = x;
+            obj.position.y = y;
+            obj.position.z = z;
+          })
+          .easing(Easing.Cubic.InOut)
+          .start();
+      })
     });
   }
 
