@@ -1,7 +1,7 @@
 import CardObject, { CardObjectProps } from "./card-object";
 import * as THREE from "three";
 import Deck from "./deck";
-import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
+import TWEEN, { Tween, Easing } from "@tweenjs/tween.js";
 
 class Game {
   hoveredName: string | null = null;
@@ -140,6 +140,7 @@ class Game {
         })
         .onComplete(() => {
           this.hasCardSettingCompleted = true;
+          this.deck.resetOnClick();
           obj.applyYGOFront();
         })
         .easing(Easing.Cubic.InOut)
