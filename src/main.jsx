@@ -104,7 +104,12 @@ const onMouseDown = (e) => {
 
   if (intersects.length > 0) {
     const parent = intersects[0].object.parent;
-    if (parent.onClick) parent.onClick(game.scene);
+    if (parent.onClick) {
+      parent.onClick(game.scene);
+      if (parent.name.includes("card")) {
+        game.shakeCameraEffect();
+      }
+    }
   }
 };
 

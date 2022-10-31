@@ -9,7 +9,8 @@ class Game {
 
   cardMap: Record<string, CardObject>;
   scene: THREE.Scene;
-  camera: THREE.OrthographicCamera;
+  camera: THREE.OrthographicCamera; // camera tween으로 shake 효과 만들어보기
+  shakeTween: Tween<{ x: number; y: number; z: number }>;
   renderer: THREE.WebGLRenderer;
   deck: Deck;
   mouse = new THREE.Vector2();
@@ -179,6 +180,45 @@ class Game {
 
     this.renderer.render(this.scene, this.camera);
     TWEEN.update();
+  }
+
+  shakeCameraEffect() {
+    this.shakeTween = new Tween({
+      x: this.camera.position.x,
+      y: this.camera.position.y,
+      z: this.camera.position.z,
+    })
+      .to({
+        x: this.camera.position.x - 1,
+        y: this.camera.position.y + 1,
+        z: this.camera.position.z,
+      })
+      .onUpdate(({ x, y, z }) => {
+        this.camera.position.x = x;
+        this.camera.position.y = y;
+        this.camera.position.z = z;
+      })
+      .repeat(6)
+      .yoyo(true)
+      .chain(
+        new Tween({
+          x: this.camera.position.x,
+          y: this.camera.position.y,
+          z: this.camera.position.z,
+        })
+          .to({
+            x: this.camera.position.x,
+            y: this.camera.position.y,
+            z: this.camera.position.z,
+          })
+          .onUpdate(({ x, y, z }) => {
+            this.camera.position.x = x;
+            this.camera.position.y = y;
+            this.camera.position.z = z;
+          })
+      )
+      .duration(50)
+      .start();
   }
 }
 
