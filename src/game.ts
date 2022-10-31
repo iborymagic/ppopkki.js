@@ -1,15 +1,15 @@
 import CardObject, { CardObjectProps } from "./card-object";
-import * as THREE from 'three';
+import * as THREE from "three";
 import Deck from "./deck";
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
 
 class Game {
-
   hoveredName: string | null = null;
+  hasCardSettingCompleted = false;
 
   cardMap: Record<string, CardObject>;
   scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera;
+  camera: THREE.OrthographicCamera;
   renderer: THREE.WebGLRenderer;
   deck: Deck;
   mouse = new THREE.Vector2();
@@ -21,14 +21,13 @@ class Game {
     if (!this.hasCardLoaded) return;
     const beforeName = this.hoveredName;
     if (beforeName !== name) {
-
       if (name && name in this.cardMap) {
-
         const card = this.cardMap[name];
-        card.onHover();
+        if (this.hasCardSettingCompleted) {
+          card.onHover(this.scene);
+        }
         this.hoveredName = name;
         return;
-
       }
 
       if (beforeName && beforeName in this.cardMap) {
@@ -36,7 +35,6 @@ class Game {
         this.hoveredName = name;
         card.onUnHover();
       }
-
     }
   }
   constructor() {
@@ -70,11 +68,13 @@ class Game {
     scene.add(xNegAmbLight);
 
     // 카메라 세팅
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      window.innerWidth / window.innerHeight,
+    const camera = new THREE.OrthographicCamera(
+      -window.innerWidth / 45,
+      window.innerWidth / 45,
+      window.innerHeight / 45,
+      -window.innerHeight / 45,
       1,
-      500
+      1000
     );
     camera.position.set(0, 0, 50);
     camera.lookAt(scene.position);
@@ -89,7 +89,7 @@ class Game {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     // renderer.domElement.setAttribute('style', 'width:100vw;height:100vh;')
-    const ctx = renderer.domElement.getContext('2d')
+    const ctx = renderer.domElement.getContext("2d");
     ctx?.scale(window.devicePixelRatio, window.devicePixelRatio);
 
     document.body.appendChild(renderer.domElement);
@@ -100,8 +100,7 @@ class Game {
     this.deck = deck;
     this.renderer = renderer;
     this.cardMap = {};
-    this.animate = this.animate.bind(this)
-
+    this.animate = this.animate.bind(this);
   }
 
   async prepareCards(cardProps: CardObjectProps[]) {
@@ -109,12 +108,13 @@ class Game {
       cardProps.map((cardProp, idx) => {
         const card = new CardObject({
           ...cardProp,
-          name: `card-${idx}`
+          name: `card-${idx}`,
         });
 
         this.cardMap[cardProp.name] = card;
         return card.render();
-      }));
+      })
+    );
 
     this.animate();
 
@@ -122,16 +122,17 @@ class Game {
       const cards = Object.values(this.cardMap);
       cards.forEach(card => {
         this.scene.add(card);
-      })
+      });
       this.deck.visible = false;
-      await this.pop();
 
+      await this.pop();
       await Promise.all(cards.map(card=>card.applyYGOFront));
 
       this.hasCardLoaded = true;
-    }
+      this.pop();
+    };
   }
-
+  
   async pop() {
     return new Promise<void>((resolve) => {
 
@@ -184,15 +185,13 @@ class Game {
 
     if (resizeRendererToDisplaySize(this.renderer)) {
       const canvas = this.renderer.domElement;
-      this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
-      this.camera.updateProjectionMatrix();
+      // this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
     }
 
     this.renderer.render(this.scene, this.camera);
     TWEEN.update();
   }
 }
-
 
 function resizeRendererToDisplaySize(renderer: THREE.WebGLRenderer) {
   const canvas = renderer.domElement;

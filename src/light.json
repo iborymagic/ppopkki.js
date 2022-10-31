@@ -1,0 +1,408 @@
+{
+  "headerState": {
+    "projectName": "light",
+    "version": {
+      "loading": false,
+      "error": null,
+      "data": { "version": "1.0.8-alpha" }
+    },
+    "release": { "loading": false, "error": null, "data": null },
+    "shouldShowReleaseDownloadDialog": false
+  },
+  "particleSystemState": {
+    "preParticles": 500,
+    "integrationType": "EULER",
+    "emitters": [
+      {
+        "id": "15cbd2a0-548b-11ed-a653-c3065d9a8f30",
+        "totalEmitTimes": null,
+        "life": null,
+        "cache": { "totalEmitTimes": 0, "life": 0 },
+        "rate": {
+          "particlesMin": 20,
+          "particlesMax": 25,
+          "perSecondMin": 0.01,
+          "perSecondMax": 0.05
+        },
+        "position": { "x": 0, "y": -1, "z": -10 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "initializers": [
+          {
+            "id": "15cbd2a1-548b-11ed-a653-c3065d9a8f30",
+            "type": "Mass",
+            "properties": { "min": 1, "max": 2, "isEnabled": true }
+          },
+          {
+            "id": "15cbd2a2-548b-11ed-a653-c3065d9a8f30",
+            "type": "Life",
+            "properties": { "min": 1, "max": 2, "isEnabled": true }
+          },
+          {
+            "id": "15cbd2a3-548b-11ed-a653-c3065d9a8f30",
+            "type": "BodySprite",
+            "properties": {
+              "texture": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAJkSURBVHjaxJeJbusgEEW94S1L//83X18M2MSuLd2pbqc4wZGqRLrKBsyZhQHny7Jk73xVL8xpVhWrcmiB5lX+6GJ5YgQ2owbAm8oIwH1VgKZUmGcRqKGGPgtEQQAzGR8hQ59fAmhJHSAagigJ4E7GPWRXOYC6owAd1JM6wDQPADyMWUqZRMqmAojHp1Vn6EQQEgUNMJLnUjMyJsM49wygBkAPw9dVFwXRkncCIIW3GRgoTQUZn6HxCMAFEFd8TwEQ78X4rHbILoAUmeT+RFG4UhQ6MiIAE4W/UsYFjuVjAIa2nIY4q1R0GFtQWG3E84lqw2GO2QOoCKBVu0BAPgDSU0eUDjjQenNkV/AW/pWChhpMTelo1a64AOKM30vk18GzTHXCNtI/Knz3DFBgsUqBGIjTInXRY1yA9xkVoqW5tVq3pDR9A0hfF5BSARmVnh7RMDCaIdcNgbPBkgzn1Bu+SfIEFSpSBmkxyrMicb0fAEuCZrWnN89veA/4XcakrPcjBWzkTuLjlbfTQPOlBhz+HwkqqPXmPQDdrQItxE1moGof1S74j/8txk8EHhTQrAE8qlwfqS5yukm1x/rAJ9Jiaa6nyATqD78aUVBhFo8b1V4DdTXdCW+IxA1zB4JhiOhZMEWO1HqnvdoHZ4FAMIhV9REF8FiUm0jsYPEJx/Fm/N8OhH90HI9YRHesWbXXZwAShU8qThe7H8YAuJmw5yOd989uRINKRTJAhoF8jbqrHKfeCYdIISZfSq26bk/K+yO3YvfKrVgiwQBHnwt8ynPB25+M8hceTt/ybPhnryJ78+tLgAEAuCFyiQgQB30AAAAASUVORK5CYII=",
+              "isEnabled": true
+            }
+          },
+          {
+            "id": "15cbd2a4-548b-11ed-a653-c3065d9a8f30",
+            "type": "Radius",
+            "properties": { "width": 1, "height": 1.2, "isEnabled": true }
+          },
+          {
+            "id": "15cbd2a5-548b-11ed-a653-c3065d9a8f30",
+            "type": "RadialVelocity",
+            "properties": {
+              "radius": 9,
+              "x": 1,
+              "y": 1,
+              "z": 1,
+              "theta": 360,
+              "isEnabled": true
+            }
+          }
+        ],
+        "behaviours": [
+          {
+            "id": "15cbd2a6-548b-11ed-a653-c3065d9a8f30",
+            "type": "Alpha",
+            "properties": {
+              "alphaA": 1,
+              "alphaB": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2a7-548b-11ed-a653-c3065d9a8f30",
+            "type": "Color",
+            "properties": {
+              "colorA": "#f7f6c3",
+              "colorB": "#fd9802",
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2a8-548b-11ed-a653-c3065d9a8f30",
+            "type": "Scale",
+            "properties": {
+              "scaleA": 0.8,
+              "scaleB": 0.1,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2a9-548b-11ed-a653-c3065d9a8f30",
+            "type": "Force",
+            "properties": {
+              "fx": 0,
+              "fy": 0,
+              "fz": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2aa-548b-11ed-a653-c3065d9a8f30",
+            "type": "Rotate",
+            "properties": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2ab-548b-11ed-a653-c3065d9a8f30",
+            "type": "RandomDrift",
+            "properties": {
+              "driftX": 0,
+              "driftY": 0,
+              "driftZ": 0,
+              "delay": 5,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          }
+        ],
+        "emitterBehaviours": [
+          {
+            "id": "15cbf9b1-548b-11ed-a653-c3065d9a8f30",
+            "type": "Rotate",
+            "properties": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          }
+        ]
+      },
+      {
+        "id": "15cbd2a0-548b-11ed-a653-c3065d9a8f30",
+        "totalEmitTimes": null,
+        "life": null,
+        "cache": { "totalEmitTimes": 0, "life": 0 },
+        "rate": {
+          "particlesMin": 24,
+          "particlesMax": 25,
+          "perSecondMin": 0.01,
+          "perSecondMax": 0.05
+        },
+        "position": { "x": 0, "y": -4, "z": -10 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "initializers": [
+          {
+            "id": "15cbd2a1-548b-11ed-a653-c3065d9a8f30",
+            "type": "Mass",
+            "properties": { "min": 1, "max": 2, "isEnabled": true }
+          },
+          {
+            "id": "15cbd2a2-548b-11ed-a653-c3065d9a8f30",
+            "type": "Life",
+            "properties": { "min": 1, "max": 2, "isEnabled": true }
+          },
+          {
+            "id": "15cbd2a3-548b-11ed-a653-c3065d9a8f30",
+            "type": "BodySprite",
+            "properties": {
+              "texture": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAJkSURBVHjaxJeJbusgEEW94S1L//83X18M2MSuLd2pbqc4wZGqRLrKBsyZhQHny7Jk73xVL8xpVhWrcmiB5lX+6GJ5YgQ2owbAm8oIwH1VgKZUmGcRqKGGPgtEQQAzGR8hQ59fAmhJHSAagigJ4E7GPWRXOYC6owAd1JM6wDQPADyMWUqZRMqmAojHp1Vn6EQQEgUNMJLnUjMyJsM49wygBkAPw9dVFwXRkncCIIW3GRgoTQUZn6HxCMAFEFd8TwEQ78X4rHbILoAUmeT+RFG4UhQ6MiIAE4W/UsYFjuVjAIa2nIY4q1R0GFtQWG3E84lqw2GO2QOoCKBVu0BAPgDSU0eUDjjQenNkV/AW/pWChhpMTelo1a64AOKM30vk18GzTHXCNtI/Knz3DFBgsUqBGIjTInXRY1yA9xkVoqW5tVq3pDR9A0hfF5BSARmVnh7RMDCaIdcNgbPBkgzn1Bu+SfIEFSpSBmkxyrMicb0fAEuCZrWnN89veA/4XcakrPcjBWzkTuLjlbfTQPOlBhz+HwkqqPXmPQDdrQItxE1moGof1S74j/8txk8EHhTQrAE8qlwfqS5yukm1x/rAJ9Jiaa6nyATqD78aUVBhFo8b1V4DdTXdCW+IxA1zB4JhiOhZMEWO1HqnvdoHZ4FAMIhV9REF8FiUm0jsYPEJx/Fm/N8OhH90HI9YRHesWbXXZwAShU8qThe7H8YAuJmw5yOd989uRINKRTJAhoF8jbqrHKfeCYdIISZfSq26bk/K+yO3YvfKrVgiwQBHnwt8ynPB25+M8hceTt/ybPhnryJ78+tLgAEAuCFyiQgQB30AAAAASUVORK5CYII=",
+              "isEnabled": true
+            }
+          },
+          {
+            "id": "15cbd2a4-548b-11ed-a653-c3065d9a8f30",
+            "type": "Radius",
+            "properties": { "width": 1, "height": 1.2, "isEnabled": true }
+          },
+          {
+            "id": "15cbd2a5-548b-11ed-a653-c3065d9a8f30",
+            "type": "RadialVelocity",
+            "properties": {
+              "radius": 9,
+              "x": 1,
+              "y": 1,
+              "z": 1,
+              "theta": 360,
+              "isEnabled": true
+            }
+          }
+        ],
+        "behaviours": [
+          {
+            "id": "15cbd2a6-548b-11ed-a653-c3065d9a8f30",
+            "type": "Alpha",
+            "properties": {
+              "alphaA": 1,
+              "alphaB": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2a7-548b-11ed-a653-c3065d9a8f30",
+            "type": "Color",
+            "properties": {
+              "colorA": "#f7f6c3",
+              "colorB": "#fd9802",
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2a8-548b-11ed-a653-c3065d9a8f30",
+            "type": "Scale",
+            "properties": {
+              "scaleA": 0.8,
+              "scaleB": 0.1,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2a9-548b-11ed-a653-c3065d9a8f30",
+            "type": "Force",
+            "properties": {
+              "fx": 0,
+              "fy": 0,
+              "fz": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2aa-548b-11ed-a653-c3065d9a8f30",
+            "type": "Rotate",
+            "properties": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2ab-548b-11ed-a653-c3065d9a8f30",
+            "type": "RandomDrift",
+            "properties": {
+              "driftX": 0,
+              "driftY": 0,
+              "driftZ": 0,
+              "delay": 5,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          }
+        ],
+        "emitterBehaviours": [
+          {
+            "id": "15cbf9b1-548b-11ed-a653-c3065d9a8f30",
+            "type": "Rotate",
+            "properties": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          }
+        ]
+      },
+      {
+        "id": "15cbd2a0-548b-11ed-a653-c3065d9a8f30",
+        "totalEmitTimes": null,
+        "life": null,
+        "cache": { "totalEmitTimes": 0, "life": 0 },
+        "rate": {
+          "particlesMin": 24,
+          "particlesMax": 25,
+          "perSecondMin": 0.01,
+          "perSecondMax": 0.05
+        },
+        "position": { "x": 0, "y": -7, "z": -10 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "initializers": [
+          {
+            "id": "15cbd2a1-548b-11ed-a653-c3065d9a8f30",
+            "type": "Mass",
+            "properties": { "min": 1, "max": 2, "isEnabled": true }
+          },
+          {
+            "id": "15cbd2a2-548b-11ed-a653-c3065d9a8f30",
+            "type": "Life",
+            "properties": { "min": 1, "max": 2, "isEnabled": true }
+          },
+          {
+            "id": "15cbd2a3-548b-11ed-a653-c3065d9a8f30",
+            "type": "BodySprite",
+            "properties": {
+              "texture": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAJkSURBVHjaxJeJbusgEEW94S1L//83X18M2MSuLd2pbqc4wZGqRLrKBsyZhQHny7Jk73xVL8xpVhWrcmiB5lX+6GJ5YgQ2owbAm8oIwH1VgKZUmGcRqKGGPgtEQQAzGR8hQ59fAmhJHSAagigJ4E7GPWRXOYC6owAd1JM6wDQPADyMWUqZRMqmAojHp1Vn6EQQEgUNMJLnUjMyJsM49wygBkAPw9dVFwXRkncCIIW3GRgoTQUZn6HxCMAFEFd8TwEQ78X4rHbILoAUmeT+RFG4UhQ6MiIAE4W/UsYFjuVjAIa2nIY4q1R0GFtQWG3E84lqw2GO2QOoCKBVu0BAPgDSU0eUDjjQenNkV/AW/pWChhpMTelo1a64AOKM30vk18GzTHXCNtI/Knz3DFBgsUqBGIjTInXRY1yA9xkVoqW5tVq3pDR9A0hfF5BSARmVnh7RMDCaIdcNgbPBkgzn1Bu+SfIEFSpSBmkxyrMicb0fAEuCZrWnN89veA/4XcakrPcjBWzkTuLjlbfTQPOlBhz+HwkqqPXmPQDdrQItxE1moGof1S74j/8txk8EHhTQrAE8qlwfqS5yukm1x/rAJ9Jiaa6nyATqD78aUVBhFo8b1V4DdTXdCW+IxA1zB4JhiOhZMEWO1HqnvdoHZ4FAMIhV9REF8FiUm0jsYPEJx/Fm/N8OhH90HI9YRHesWbXXZwAShU8qThe7H8YAuJmw5yOd989uRINKRTJAhoF8jbqrHKfeCYdIISZfSq26bk/K+yO3YvfKrVgiwQBHnwt8ynPB25+M8hceTt/ybPhnryJ78+tLgAEAuCFyiQgQB30AAAAASUVORK5CYII=",
+              "isEnabled": true
+            }
+          },
+          {
+            "id": "15cbd2a4-548b-11ed-a653-c3065d9a8f30",
+            "type": "Radius",
+            "properties": { "width": 1, "height": 1.2, "isEnabled": true }
+          },
+          {
+            "id": "15cbd2a5-548b-11ed-a653-c3065d9a8f30",
+            "type": "RadialVelocity",
+            "properties": {
+              "radius": 9,
+              "x": 1,
+              "y": 1,
+              "z": 1,
+              "theta": 360,
+              "isEnabled": true
+            }
+          }
+        ],
+        "behaviours": [
+          {
+            "id": "15cbd2a6-548b-11ed-a653-c3065d9a8f30",
+            "type": "Alpha",
+            "properties": {
+              "alphaA": 1,
+              "alphaB": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2a7-548b-11ed-a653-c3065d9a8f30",
+            "type": "Color",
+            "properties": {
+              "colorA": "#f7f6c3",
+              "colorB": "#fd9802",
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2a8-548b-11ed-a653-c3065d9a8f30",
+            "type": "Scale",
+            "properties": {
+              "scaleA": 0.8,
+              "scaleB": 0.1,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2a9-548b-11ed-a653-c3065d9a8f30",
+            "type": "Force",
+            "properties": {
+              "fx": 0,
+              "fy": 0,
+              "fz": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2aa-548b-11ed-a653-c3065d9a8f30",
+            "type": "Rotate",
+            "properties": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          },
+          {
+            "id": "15cbd2ab-548b-11ed-a653-c3065d9a8f30",
+            "type": "RandomDrift",
+            "properties": {
+              "driftX": 0,
+              "driftY": 0,
+              "driftZ": 0,
+              "delay": 5,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          }
+        ],
+        "emitterBehaviours": [
+          {
+            "id": "15cbf9b1-548b-11ed-a653-c3065d9a8f30",
+            "type": "Rotate",
+            "properties": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "life": null,
+              "easing": "easeLinear"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
