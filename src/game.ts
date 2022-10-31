@@ -29,7 +29,9 @@ class Game {
         const card = this.cardMap[name];
         if (this.hasCardSettingCompleted) {
           card.onHover();
-          this.playBacklightEffect(card.position);
+          if (!card.hasFlipped) {
+            this.playBacklightEffect(card.position);
+          }
         }
         this.hoveredName = name;
         return;

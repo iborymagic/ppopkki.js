@@ -23,6 +23,8 @@ class CardObject extends Object3D {
   flipTween: Tween<{ y: number }>;
   meshFront: THREE.Mesh;
 
+  hasFlipped: boolean = false;
+
   constructor(cardProps: CardObjectProps) {
     super();
     this.props = cardProps;
@@ -53,17 +55,21 @@ class CardObject extends Object3D {
   }
 
   onClick() {
-    console.log("card clicked!");
+    if (!this.hasFlipped) {
+      console.log("card clicked!");
 
-    this.flipTween = new Tween({ y: this.rotation.y })
-      .to({ y: this.rotation.y + Math.PI * 3 }, 200)
-      .onUpdate(({ y }) => {
-        this.rotation.y = y;
-      })
-      .duration(1100)
-      // http://tweenjs.github.io/tween.js/examples/03_graphs.html
-      .start()
-      .easing(Easing.Quadratic.InOut);
+      this.flipTween = new Tween({ y: this.rotation.y })
+        .to({ y: this.rotation.y + Math.PI * 3 }, 200)
+        .onUpdate(({ y }) => {
+          this.rotation.y = y;
+        })
+        .duration(1100)
+        // http://tweenjs.github.io/tween.js/examples/03_graphs.html
+        .start()
+        .easing(Easing.Quadratic.InOut);
+
+      this.hasFlipped = true;
+    }
   }
 
   async applyYGOFront() {
