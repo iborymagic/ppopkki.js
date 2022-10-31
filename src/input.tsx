@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {nanoid} from 'nanoid';
+import { nanoid } from "nanoid";
 
 type Item = {
   checked: boolean;
@@ -59,7 +59,7 @@ function Input() {
       ...items,
       {
         ...defaultItem,
-        id: nanoid()
+        id: nanoid(),
       },
     ]);
   };
@@ -98,9 +98,9 @@ function Input() {
                 <tr key={item.id}>
                   <td>
                     <input
-                    type="checkbox"
-                    id={getIdForCheck(item.id)}
-                    defaultChecked={item.checked}
+                      type="checkbox"
+                      id={getIdForCheck(item.id)}
+                      defaultChecked={item.checked}
                     ></input>
                   </td>
                   <td>
@@ -147,7 +147,7 @@ function Input() {
                     name,
                   },
                   pic: url,
-                  checked
+                  checked,
                 };
               });
 
@@ -164,7 +164,10 @@ function Input() {
                 STORAGE_KEY,
                 JSON.stringify(itemsForStorage)
               );
-              window.onSubmit(result.filter(x=>x.checked), form["n"]?.value ?? 1);
+              window.onSubmit(
+                result.filter((x) => x.checked),
+                form["n"]?.value ?? 1
+              );
             }}
           >
             가즈아

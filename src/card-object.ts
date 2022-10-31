@@ -5,6 +5,7 @@ import { Card, CardProps } from "ygo-card";
 import { isometicDegree } from "./deck";
 import Nebula from "three-nebula";
 import emitter from "./light.json";
+import { nanoid } from "nanoid";
 import { SpriteRenderer } from "three-nebula/build/cjs/renderer";
 
 export type CardObjectProps = CardProps & { pic: string; name: string };
@@ -98,7 +99,7 @@ class CardObject extends Object3D {
     console.log("card clicked!");
     this.removeGlareEffect();
 
-    console.log(this.props)
+    console.log(this.props);
 
     this.flipTween = new Tween({ y: this.rotation.y })
       .to({ y: this.rotation.y + Math.PI * 3 }, 200)
@@ -107,7 +108,8 @@ class CardObject extends Object3D {
       })
       .duration(1100)
       // http://tweenjs.github.io/tween.js/examples/03_graphs.html
-      .start().easing(Easing.Quadratic.InOut);
+      .start()
+      .easing(Easing.Quadratic.InOut);
   }
 
   async applyYGOFront() {
@@ -119,22 +121,24 @@ class CardObject extends Object3D {
           canvas,
           size: [400 * devicePixelRatio, 584 * devicePixelRatio],
           moldPath: "./mold",
-          getPic: () => this.props.pic,
+          getPic: () =>
+            this.props.pic
+              ? this.props.pic
+              : `https://cataas.com/cat?ts=${nanoid()}`,
           picLoaded: () => resolve(ygoCard),
         });
         ygoCard.render();
-      })
-    }
+      });
+    };
 
     return waitCardPicLoad().then(() => {
-
       const ygoTexture = new THREE.CanvasTexture(canvas);
 
       const ygoMaterial = new THREE.MeshBasicMaterial({
         map: ygoTexture,
       });
       this.meshFront.material = ygoMaterial;
-    })
+    });
   }
 
   async render() {
