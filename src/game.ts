@@ -129,7 +129,6 @@ class Game {
       await Promise.all(cards.map(card=>card.applyYGOFront));
 
       this.hasCardLoaded = true;
-      this.pop();
     };
   }
   
