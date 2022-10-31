@@ -2,6 +2,10 @@ import CardObject, { CardObjectProps } from "./card-object";
 import * as THREE from "three";
 import Deck from "./deck";
 import TWEEN, { Tween, Easing } from "@tweenjs/tween.js";
+import Nebula from "three-nebula";
+import lightEmitter from "./light.json";
+import fireEmitter from "./fire.json";
+import { SpriteRenderer } from "three-nebula/build/cjs/renderer";
 
 class Game {
   hoveredName: string | null = null;
@@ -9,12 +13,14 @@ class Game {
 
   cardMap: Record<string, CardObject>;
   scene: THREE.Scene;
-  camera: THREE.OrthographicCamera; // camera tween으로 shake 효과 만들어보기
+  camera: THREE.OrthographicCamera;
   shakeTween: Tween<{ x: number; y: number; z: number }>;
   renderer: THREE.WebGLRenderer;
   deck: Deck;
   mouse = new THREE.Vector2();
   rayCaster = new THREE.Raycaster();
+  glareParticleSystem: any;
+  fireParticleSystem: any;
 
   onHoverCardObject(name: string | null) {
     const beforeName = this.hoveredName;
@@ -22,7 +28,8 @@ class Game {
       if (name && name in this.cardMap) {
         const card = this.cardMap[name];
         if (this.hasCardSettingCompleted) {
-          card.onHover(this.scene);
+          card.onHover();
+          this.playBacklightEffect(card.position);
         }
         this.hoveredName = name;
         return;
@@ -32,6 +39,7 @@ class Game {
         const card = this.cardMap[beforeName];
         this.hoveredName = name;
         card.onUnHover();
+        this.removeGlareEffect();
       }
     }
   }
@@ -99,6 +107,9 @@ class Game {
     this.renderer = renderer;
     this.cardMap = {};
     this.animate = this.animate.bind(this);
+    this.animateParticleEffect = this.animateParticleEffect.bind(this);
+    this.removeGlareEffect = this.removeGlareEffect.bind(this);
+    this.playBacklightEffect = this.playBacklightEffect.bind(this);
   }
 
   async prepareCards(cardProps: CardObjectProps[]) {
@@ -219,6 +230,63 @@ class Game {
       )
       .duration(50)
       .start();
+  }
+
+  animateParticleEffect(nebula) {
+    requestAnimationFrame(() => this.animateParticleEffect(nebula));
+    nebula.update();
+  }
+
+  removeGlareEffect() {
+    if (this.glareParticleSystem) {
+      this.glareParticleSystem.emitters.forEach((emitter) => {
+        emitter.stopEmit();
+        emitter.particles.forEach((particle) => {
+          particle.target.removeFromParent();
+          particle.destroy();
+        });
+      });
+
+      this.glareParticleSystem = null;
+    }
+  }
+
+  playBacklightEffect(cardPosition) {
+    Nebula.fromJSONAsync(lightEmitter.particleSystemState, THREE).then(
+      (system) => {
+        this.glareParticleSystem = system;
+        const nebulaRenderer = new SpriteRenderer(this.scene, THREE);
+        const nebula = system.addRenderer(nebulaRenderer);
+        system.emitters.forEach((emitter, idx) => {
+          emitter.setPosition({
+            x: cardPosition.x,
+            y: cardPosition.y - (idx - 1) * 3,
+            z: cardPosition.z - 8,
+          });
+        });
+
+        this.animateParticleEffect(nebula);
+      }
+    );
+  }
+
+  playFireEffect(cardPosition) {
+    Nebula.fromJSONAsync(fireEmitter.particleSystemState, THREE).then(
+      (system) => {
+        this.fireParticleSystem = system;
+        const nebulaRenderer = new SpriteRenderer(this.scene, THREE);
+        const nebula = system.addRenderer(nebulaRenderer);
+        system.emitters.forEach((emitter) => {
+          emitter.setPosition({
+            x: cardPosition.x + 3,
+            y: cardPosition.y - 5,
+            z: cardPosition.z - 2,
+          });
+        });
+
+        this.animateParticleEffect(nebula);
+      }
+    );
   }
 }
 

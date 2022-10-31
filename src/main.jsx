@@ -107,7 +107,9 @@ const onMouseDown = (e) => {
     if (parent.onClick) {
       parent.onClick(game.scene);
       if (parent.name.includes("card")) {
+        game.removeGlareEffect();
         game.shakeCameraEffect();
+        game.playFireEffect(parent.position);
       }
     }
   }
@@ -118,6 +120,7 @@ window.setInterval(() => {
     Object.values(game.cardMap).forEach((cardMap) => {
       if (!cardMap.glareParticleSystem) return;
       cardMap.onUnHover();
+      game.removeGlareEffect();
     });
   }
 }, 1000);
