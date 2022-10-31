@@ -30,6 +30,10 @@ class Deck extends Object3D {
     // );
     this.rotation.set(Math.PI / 5, Math.PI / 5, 0);
   }
+
+  resetOnClick() {
+    this.onClick = () => {};
+  }
 }
 
 export default Deck;

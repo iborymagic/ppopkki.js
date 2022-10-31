@@ -1,12 +1,9 @@
 import { Tween, Easing } from "@tweenjs/tween.js";
+import { nanoid } from "nanoid";
 import * as THREE from "three";
 import { Object3D } from "three";
 import { Card, CardProps } from "ygo-card";
 import { isometicDegree } from "./deck";
-import Nebula from "three-nebula";
-import emitter from "./light.json";
-import { nanoid } from "nanoid";
-import { SpriteRenderer } from "three-nebula/build/cjs/renderer";
 
 export type CardObjectProps = CardProps & { pic: string; name: string };
 
@@ -21,41 +18,21 @@ export function yugiohCardTextureFactory(): THREE.Texture {
 class CardObject extends Object3D {
   props: CardObjectProps;
   outline: THREE.LineSegments;
-  glareParticleSystem: any;
   scaleTween: Tween<{ scale: number }>;
   rotationTween: Tween<{ x: number; y: number; z: number }>;
   positionTween: Tween<{ x: number; y: number; z: number }>;
   flipTween: Tween<{ y: number }>;
   meshFront: THREE.Mesh;
 
+  hasFlipped = false;
+
   constructor(cardProps: CardObjectProps) {
     super();
     this.props = cardProps;
     this.name = this.props.name;
-    this.animateGlareEffect = this.animateGlareEffect.bind(this);
-    this.removeGlareEffect = this.removeGlareEffect.bind(this);
   }
 
-  animateGlareEffect(nebula) {
-    requestAnimationFrame(() => this.animateGlareEffect(nebula));
-    nebula.update();
-  }
-
-  removeGlareEffect() {
-    if (this.glareParticleSystem) {
-      this.glareParticleSystem.emitters.forEach((emitter) => {
-        emitter.stopEmit();
-        emitter.particles.forEach((particle) => {
-          particle.target.removeFromParent();
-          particle.destroy();
-        });
-      });
-
-      this.glareParticleSystem = null;
-    }
-  }
-
-  onHover(scene: THREE.Scene) {
+  onHover() {
     this.scaleTween = new Tween({ scale: 1 })
       .to({ scale: 1.2 }, 200)
       .onUpdate(({ scale }) => {
@@ -63,21 +40,6 @@ class CardObject extends Object3D {
         this.outline.visible = true;
       })
       .start();
-
-    Nebula.fromJSONAsync(emitter.particleSystemState, THREE).then((system) => {
-      this.glareParticleSystem = system;
-      const nebulaRenderer = new SpriteRenderer(scene, THREE);
-      const nebula = system.addRenderer(nebulaRenderer);
-      system.emitters.forEach((emitter, idx) => {
-        emitter.setPosition({
-          x: this.position.x,
-          y: this.position.y - (idx - 1) * 3, // particle emitter 적절한 위치 찾아보기
-          z: this.position.z - 8,
-        });
-      });
-
-      this.animateGlareEffect(nebula);
-    });
   }
 
   onUnHover() {
@@ -91,25 +53,24 @@ class CardObject extends Object3D {
         })
         .start();
     }
-
-    this.removeGlareEffect();
   }
 
   onClick() {
-    console.log("card clicked!");
-    this.removeGlareEffect();
+    if (!this.hasFlipped) {
+      console.log("card clicked!");
 
-    console.log(this.props);
+      this.flipTween = new Tween({ y: this.rotation.y })
+        .to({ y: this.rotation.y + Math.PI * 3 }, 200)
+        .onUpdate(({ y }) => {
+          this.rotation.y = y;
+        })
+        .duration(1100)
+        // http://tweenjs.github.io/tween.js/examples/03_graphs.html
+        .start()
+        .easing(Easing.Quadratic.InOut);
 
-    this.flipTween = new Tween({ y: this.rotation.y })
-      .to({ y: this.rotation.y + Math.PI * 3 }, 200)
-      .onUpdate(({ y }) => {
-        this.rotation.y = y;
-      })
-      .duration(1100)
-      // http://tweenjs.github.io/tween.js/examples/03_graphs.html
-      .start()
-      .easing(Easing.Quadratic.InOut);
+      this.hasFlipped = true;
+    }
   }
 
   async applyYGOFront() {

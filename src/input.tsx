@@ -71,7 +71,7 @@ function Input() {
   useEffect(() => {
     try {
       const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "");
-      console.log({ arr, isItems: isItems(arr) });
+
       if (isItems(arr)) {
         setItems(arr);
       }

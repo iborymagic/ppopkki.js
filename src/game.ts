@@ -1,30 +1,37 @@
 import CardObject, { CardObjectProps } from "./card-object";
 import * as THREE from "three";
 import Deck from "./deck";
-import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
+import TWEEN, { Tween, Easing } from "@tweenjs/tween.js";
+import Nebula from "three-nebula";
+import lightEmitter from "./light.json";
+import fireEmitter from "./fire.json";
+import { SpriteRenderer } from "three-nebula/build/cjs/renderer";
 
 class Game {
   hoveredName: string | null = null;
-  hasCardSettingCompleted = false;
+  hasCardLoaded = false;
 
   cardMap: Record<string, CardObject>;
   scene: THREE.Scene;
   camera: THREE.OrthographicCamera;
+  shakeTween: Tween<{ x: number; y: number; z: number }>;
   renderer: THREE.WebGLRenderer;
   deck: Deck;
   mouse = new THREE.Vector2();
   rayCaster = new THREE.Raycaster();
-  hasCardLoaded = false;
+  glareParticleSystem: any;
+  fireParticleSystem: any;
 
   onHoverCardObject(name: string | null) {
-
     if (!this.hasCardLoaded) return;
+
     const beforeName = this.hoveredName;
     if (beforeName !== name) {
       if (name && name in this.cardMap) {
         const card = this.cardMap[name];
-        if (this.hasCardSettingCompleted) {
-          card.onHover(this.scene);
+        card.onHover();
+        if (!card.hasFlipped) {
+          this.playBacklightEffect(card.position);
         }
         this.hoveredName = name;
         return;
@@ -34,6 +41,7 @@ class Game {
         const card = this.cardMap[beforeName];
         this.hoveredName = name;
         card.onUnHover();
+        this.removeGlareEffect();
       }
     }
   }
@@ -101,6 +109,9 @@ class Game {
     this.renderer = renderer;
     this.cardMap = {};
     this.animate = this.animate.bind(this);
+    this.animateParticleEffect = this.animateParticleEffect.bind(this);
+    this.removeGlareEffect = this.removeGlareEffect.bind(this);
+    this.playBacklightEffect = this.playBacklightEffect.bind(this);
   }
 
   async prepareCards(cardProps: CardObjectProps[]) {
@@ -120,21 +131,20 @@ class Game {
 
     this.deck.onClick = async () => {
       const cards = Object.values(this.cardMap);
-      cards.forEach(card => {
+      cards.forEach((card) => {
         this.scene.add(card);
       });
       this.deck.visible = false;
 
       await this.pop();
-      await Promise.all(cards.map(card=>card.applyYGOFront));
+      await Promise.all(cards.map((card) => card.applyYGOFront()));
 
       this.hasCardLoaded = true;
     };
   }
-  
+
   async pop() {
     return new Promise<void>((resolve) => {
-
       Object.entries(this.cardMap).forEach(([name, obj], idx) => {
         obj.visible = true;
         obj.rotationTween = new Tween({
@@ -149,8 +159,8 @@ class Game {
             obj.rotation.z = z;
           })
           .onComplete(() => {
-            resolve();
-            obj.applyYGOFront()
+            this.deck.resetOnClick();
+            obj.applyYGOFront();
           })
           .easing(Easing.Cubic.InOut)
           .start();
@@ -173,9 +183,13 @@ class Game {
             obj.position.y = y;
             obj.position.z = z;
           })
+          .onComplete(() => {
+            resolve();
+          })
+
           .easing(Easing.Cubic.InOut)
           .start();
-      })
+      });
     });
   }
 
@@ -189,6 +203,102 @@ class Game {
 
     this.renderer.render(this.scene, this.camera);
     TWEEN.update();
+  }
+
+  shakeCameraEffect() {
+    this.shakeTween = new Tween({
+      x: this.camera.position.x,
+      y: this.camera.position.y,
+      z: this.camera.position.z,
+    })
+      .to({
+        x: this.camera.position.x - 1,
+        y: this.camera.position.y + 1,
+        z: this.camera.position.z,
+      })
+      .onUpdate(({ x, y, z }) => {
+        this.camera.position.x = x;
+        this.camera.position.y = y;
+        this.camera.position.z = z;
+      })
+      .repeat(6)
+      .yoyo(true)
+      .chain(
+        new Tween({
+          x: this.camera.position.x,
+          y: this.camera.position.y,
+          z: this.camera.position.z,
+        })
+          .to({
+            x: this.camera.position.x,
+            y: this.camera.position.y,
+            z: this.camera.position.z,
+          })
+          .onUpdate(({ x, y, z }) => {
+            this.camera.position.x = x;
+            this.camera.position.y = y;
+            this.camera.position.z = z;
+          })
+      )
+      .duration(50)
+      .start();
+  }
+
+  animateParticleEffect(nebula) {
+    requestAnimationFrame(() => this.animateParticleEffect(nebula));
+    nebula.update();
+  }
+
+  removeGlareEffect() {
+    if (this.glareParticleSystem) {
+      this.glareParticleSystem.emitters.forEach((emitter) => {
+        emitter.stopEmit();
+        emitter.particles.forEach((particle) => {
+          particle.target.removeFromParent();
+          particle.destroy();
+        });
+      });
+
+      this.glareParticleSystem = null;
+    }
+  }
+
+  playBacklightEffect(cardPosition) {
+    Nebula.fromJSONAsync(lightEmitter.particleSystemState, THREE).then(
+      (system) => {
+        this.glareParticleSystem = system;
+        const nebulaRenderer = new SpriteRenderer(this.scene, THREE);
+        const nebula = system.addRenderer(nebulaRenderer);
+        system.emitters.forEach((emitter, idx) => {
+          emitter.setPosition({
+            x: cardPosition.x,
+            y: cardPosition.y - (idx - 1) * 3,
+            z: cardPosition.z - 8,
+          });
+        });
+
+        this.animateParticleEffect(nebula);
+      }
+    );
+  }
+
+  playFireEffect(cardPosition) {
+    Nebula.fromJSONAsync(fireEmitter.particleSystemState, THREE).then(
+      (system) => {
+        this.fireParticleSystem = system;
+        const nebulaRenderer = new SpriteRenderer(this.scene, THREE);
+        const nebula = system.addRenderer(nebulaRenderer);
+        system.emitters.forEach((emitter) => {
+          emitter.setPosition({
+            x: cardPosition.x + 3,
+            y: cardPosition.y - 5,
+            z: cardPosition.z - 2,
+          });
+        });
+
+        this.animateParticleEffect(nebula);
+      }
+    );
   }
 }
 
