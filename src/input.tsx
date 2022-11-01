@@ -118,13 +118,18 @@ function Input() {
       }}
     >
       <div>
+        <section className="hero is-primary mb-5" style={{ borderRadius: 3 }}>
+          <div className="hero-body">
+            <div className="title">ppopkki.3d</div>
+          </div>
+        </section>
         <form>
           <table className="table">
             <thead>
               <th> </th>
-              <th>이름(required)</th>
-              <th>이미지 주소(optional)</th>
-              <th>카드 종류(required)</th>
+              <th>이름(*)</th>
+              <th>이미지 주소</th>
+              <th>카드 종류(*)</th>
               <th> </th>
             </thead>
             <tbody>
@@ -154,7 +159,7 @@ function Input() {
                       ></input>
                     </td>
                     <td>
-                      <div className="select">
+                      <div className="select is-small">
                         <select
                           id={getIdForCardType(item.id)}
                           defaultValue={item.type}
@@ -170,7 +175,10 @@ function Input() {
                     <td>
                       {items.length > 1 && (
                         <button
-                          className="button is-danger is-small"
+                          className="delete is-small"
+                          style={{
+                            verticalAlign: "middle",
+                          }}
                           onClick={() => removeState(item.id)}
                         >
                           제거
@@ -182,9 +190,11 @@ function Input() {
               })}
               <tr>
                 <td colSpan={5}>
-                  <button className="button is-info" onClick={addState}>
-                    한 명 더 추가하기
-                  </button>
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <button className="button is-info" onClick={addState}>
+                      한 명 더 추가하기
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
