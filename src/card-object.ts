@@ -133,7 +133,11 @@ class CardObject extends Object3D {
     //   12 * Math.sin(rad * idx + radOffset),
     //   0
     // );
-    this.rotation.set(isometicDegree + Math.PI / 2, 0, -isometicDegree);
+    this.rotation.set(
+      isometicDegree + Math.PI / 2,
+      0,
+      Math.PI - isometicDegree
+    );
     // this.setRotationFromEuler(
     // new THREE.Euler(0, Math.PI / 4, 0, "XYZ")
     // );
