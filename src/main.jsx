@@ -75,9 +75,19 @@ function getCardDataListFromStringArr(arr, n) {
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 
+const setGuideText = (text) => {
+  const guide = document.querySelector('#guide-text')
+  if(!guide) return;
+  guide.innerHTML = text;
+}
+
+window.setGuideText = setGuideText;
+
 const onMouseMove = (e) => {
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  if(e) {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  }
   raycaster.setFromCamera(mouse, game.camera);
 
   const intersects = raycaster.intersectObjects(game.scene.children);
@@ -129,5 +139,6 @@ window.setInterval(() => {
   }
 }, 1000);
 
+window.onMouseMove = onMouseMove;
 window.addEventListener("mousemove", onMouseMove);
 window.addEventListener("mousedown", onMouseDown);

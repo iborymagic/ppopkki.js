@@ -25,10 +25,9 @@ class Deck extends Object3D {
     this.deck = deck;
     this.name = "deck";
     this.add(deck);
-    // this.setRotationFromEuler(
-    //   new THREE.Euler(isometicDegree, isometicDegree, 0, "XYZ")
-    // );
-    this.rotation.set(Math.PI / 5, Math.PI / 5, 0);
+    this.setRotationFromEuler(
+      new THREE.Euler(isometicDegree, isometicDegree, 0, "XYZ")
+    );
   }
 
   resetOnClick() {

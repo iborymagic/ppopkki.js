@@ -20,10 +20,16 @@ class Game {
   mouse = new THREE.Vector2();
   rayCaster = new THREE.Raycaster();
   glareParticleSystem: any;
+  hasHovered = false;
   fireParticleSystem: any;
 
   onHoverCardObject(name: string | null) {
     if (!this.hasCardLoaded) return;
+
+    if (!this.hasHovered) {
+      window.setGuideText("카드를 클릭해보세요");
+      this.hasHovered = true;
+    }
 
     const beforeName = this.hoveredName;
     if (beforeName !== name) {
@@ -140,10 +146,14 @@ class Game {
       await Promise.all(cards.map((card) => card.applyYGOFront()));
 
       this.hasCardLoaded = true;
+      window.setGuideText("카드 위에 마우스를 올려주세요");
+      window.onMouseMove();
     };
   }
 
   async pop() {
+    window.setGuideText("");
+    const length = Object.keys(this.cardMap).length;
     return new Promise<void>((resolve) => {
       Object.entries(this.cardMap).forEach(([name, obj], idx) => {
         obj.visible = true;
@@ -165,7 +175,7 @@ class Game {
           .easing(Easing.Cubic.InOut)
           .start();
 
-        const rad = (Math.PI * 2) / Object.keys(this.cardMap).length;
+        const rad = (Math.PI * 2) / length;
         const radOffset = Math.PI / 2;
 
         obj.positionTween = new Tween({
@@ -174,8 +184,8 @@ class Game {
           z: 0,
         })
           .to({
-            x: 12 * Math.cos(rad * idx + radOffset),
-            y: 12 * Math.sin(rad * idx + radOffset),
+            x: length === 1 ? 0 : 12 * Math.cos(rad * idx + radOffset),
+            y: length === 1 ? 0 : 12 * Math.sin(rad * idx + radOffset),
             z: 0,
           })
           .onUpdate(({ x, y, z }) => {

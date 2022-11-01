@@ -40,6 +40,8 @@ declare global {
       }[],
       n: number
     ) => void;
+    onMouseMove: () => void;
+    setGuideText: (text: string) => void;
   }
 }
 const defaultItem: Item = {
@@ -95,7 +97,6 @@ function Input() {
     try {
       const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "");
       const nFromStorage = parseInt(localStorage.getItem(N_KEY) ?? "");
-      console.log({ nFromStorage });
 
       setN(isNaN(nFromStorage) ? 1 : nFromStorage);
       if (isItems(arr)) {

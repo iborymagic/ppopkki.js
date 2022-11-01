@@ -56,9 +56,8 @@ class CardObject extends Object3D {
   }
 
   onClick() {
+    window.setGuideText("");
     if (!this.hasFlipped) {
-      console.log("card clicked!");
-
       this.flipTween = new Tween({ y: this.rotation.y })
         .to({ y: this.rotation.y + Math.PI * 3 }, 200)
         .onUpdate(({ y }) => {
