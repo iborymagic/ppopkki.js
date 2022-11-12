@@ -1,6 +1,7 @@
 import "bulma";
 import { nanoid } from "nanoid";
 import React, { useEffect, useState } from "react";
+import TSON from "typescript-json";
 import Item, { CardType, cardTypes, defaultItem, isItems } from "./models";
 
 const STORAGE_KEY = "table";
@@ -28,6 +29,8 @@ function Input() {
   const [items, setItems] = useState<Item[]>([defaultItem]);
   const [n, setN] = useState<number | undefined>(undefined);
 
+  const [urlForShare, setUrlForShare] = useState<string>('');
+
   const removeState = (id: string) => {
     setItems((items) => items.filter((item) => item.id !== id));
   };
@@ -45,12 +48,36 @@ function Input() {
 
   useEffect(() => {
     try {
+      const params = new URLSearchParams(window.location.search);
+
+      if (params.has(QUERY_KEY)) {
+        try {
+          const json = JSON.parse(params.get(QUERY_KEY) ?? '');
+          console.log({ json })
+          const isValidJSON = TSON.is<FormResult>(json)
+          console.log({ result: TSON.validate<FormResult>(json) })
+          console.log({ isValidJSON })
+          if (isValidJSON) {
+            setItems(json.cardInfos.map(transformCardInfoToItem))
+            setN(json.n);
+            return () => { }
+          }
+        }
+        catch (e) {
+          console.error(e);
+          console.log('error  on TSON')
+        }
+      }
+
       const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "");
       const nFromStorage = parseInt(localStorage.getItem(N_KEY) ?? "");
 
       setN(isNaN(nFromStorage) ? 1 : nFromStorage);
       if (isItems(arr)) {
         setItems(arr);
+      }
+      return () => {
+
       }
     } catch (e) {
       console.error(e);
@@ -62,9 +89,9 @@ function Input() {
   const onFormSubmit = (e) => {
     e.preventDefault();
 
-    const { results, n } = getResultFromFormAndIds(items.map(x => x.id));
+    const { cardInfos, n } = getFormResultFromFormAndIds(items.map(x => x.id));
 
-    const itemsForStorage: Item[] = results.map(transformResultToItem);
+    const itemsForStorage: Item[] = cardInfos.map(transformCardInfoToItem);
 
     window.localStorage.setItem(
       STORAGE_KEY,
@@ -72,7 +99,7 @@ function Input() {
     );
     window.localStorage.setItem(N_KEY, String(n));
     window.onSubmit(
-      results.filter((x) => x.checked),
+      cardInfos.filter((x) => x.checked),
       n
     );
   }
@@ -200,6 +227,17 @@ function Input() {
             </button>
           </p>
         </form>
+        <p>
+          <button className="button is-small is-warning mt-10" onClick={(e) => {
+            const results = getFormResultFromFormAndIds(items.map(x => x.id));
+
+            setUrlForShare(`${window.location.origin}${window.location.pathname}?${QUERY_KEY}=${encodeURIComponent(JSON.stringify(results))}`)
+
+          }}>공유용 URL 만들기</button>
+          <p className="mt-3">
+            {urlForShare && <textarea className="textarea" readOnly value={urlForShare}></textarea>}
+          </p>
+        </p>
       </div>
     </div>
   );
@@ -210,13 +248,14 @@ function getIdForURL(id: string) { return id + "url" };
 function getIdForCheck(id: string) { return id + "checked" };
 function getIdForCardType(id: string) { return id + "type" };
 
-function getResultFromFormAndIds(itemIds: string[]): {
-  results: Result[],
+type FormResult = {
+  cardInfos: CardInfo[];
   n: number;
-} {
+}
+function getFormResultFromFormAndIds(itemIds: string[]): FormResult {
   const form = document.forms[0];
 
-  const results = itemIds.map((id) => {
+  const cardInfos = itemIds.map((id) => {
     const name =
       form[getIdForName(id)]?.value ?? defaultItem.name;
     const url =
@@ -247,12 +286,12 @@ function getResultFromFormAndIds(itemIds: string[]): {
   });
 
   return {
-    results,
+    cardInfos,
     n: form["n"]?.value ?? 1
   }
 }
 
-type Result = {
+type CardInfo = {
   data: {
     name: 'string';
     type: string;
@@ -262,14 +301,13 @@ type Result = {
   checked: boolean;
   type: CardType;
 }
-
-function transformResultToItem(result: Result) {
+function transformCardInfoToItem(cardInfo: CardInfo): Item {
   return {
     id: nanoid(),
-    name: result.data.name ?? defaultItem.name,
-    url: result.pic ?? defaultItem.url,
-    checked: result.checked ?? defaultItem.checked,
-    type: result.type ?? defaultItem.type,
+    name: cardInfo.data.name ?? defaultItem.name,
+    url: cardInfo.pic ?? defaultItem.url,
+    checked: cardInfo.checked ?? defaultItem.checked,
+    type: cardInfo.type ?? defaultItem.type,
   }
 }
 export default Input;
