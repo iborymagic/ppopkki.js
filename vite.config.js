@@ -1,4 +1,6 @@
 /** @type {import('vite').UserConfig} */
+import tscc from 'ttypescript';
+import typescript from '@rollup/plugin-typescript'
 export default {
     root: 'src',
     publicDir: 'assets',
@@ -6,5 +8,8 @@ export default {
     build: {
         assetsDir: 'public',
         outDir: '../dist'
-    }
+    },
+    plugins: [
+        typescript({tscc})
+    ]
 }
