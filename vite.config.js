@@ -1,6 +1,7 @@
 /** @type {import('vite').UserConfig} */
-import tscc from 'ttypescript';
-import typescript from '@rollup/plugin-typescript'
+import ttsc from 'ttypescript';
+import typescript from '@rollup/plugin-typescript';
+import react from '@vitejs/plugin-react'
 export default {
     root: 'src',
     publicDir: 'assets',
@@ -10,6 +11,9 @@ export default {
         outDir: '../dist'
     },
     plugins: [
-        typescript({tscc})
+        react(),
+        typescript({
+            typescript: ttsc
+        })
     ]
 }
