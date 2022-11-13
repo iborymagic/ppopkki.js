@@ -1,19 +1,13 @@
 import "bulma";
 import { nanoid } from "nanoid";
 import React, { FormEventHandler, MouseEventHandler, useEffect, useState } from "react";
+import { setQuaternionFromProperEuler } from "three/src/math/MathUtils";
 
 import { CardInfo } from "./models/card-info";
 import { cardTypes } from "./models/card-type";
-import { FormResult, isFormResult } from "./models/form-result";
+import { FormResult, formResultSchema, isFormResult } from "./models/form-result";
 import { defaultItem, isItems, Item } from "./models/item";
-
-/** @deprecated */
-const STORAGE_KEY = "table";
-/** @deprecated */
-const N_KEY = "n";
-
-const STORAGE_RESULT_KEY = "table-result";
-const QUERY_KEY = "data";
+import useExternalFormState, { getURLFromResult, saveResultOnLocalStorage } from "./use-external-form-state";
 
 declare global {
   interface Window {
@@ -24,18 +18,33 @@ declare global {
 }
 
 
-function Input() {
+function useFormState() {
   const [items, setItems] = useState<Item[]>([defaultItem]);
-  const [n, setN] = useState<number | undefined>(undefined);
+  const [n, setN] = useState<number>(1);
 
-  const [urlForShare, setUrlForShare] = useState<string>('');
+  const getFormResult = (): FormResult | null => {
+    const formResult = {
+      n,
+      cardInfos: getFormResultFromFormAndIds(items.map(x => x.id))
+    }
 
-  const removeState = (id: string) => {
+    if (formResultSchema.isType(formResult)) {
+      return formResult;
+    }
+    return null;
+  }
+
+  const setFromResult = (result: FormResult) => {
+    setItems(result.cardInfos.map(transformCardInfoToItem));
+    setN(result.n)
+  }
+
+
+  const remove = (id: string) => {
     setItems((items) => items.filter((item) => item.id !== id));
   };
 
-  const addState: MouseEventHandler = (e) => {
-    e.preventDefault();
+  const add = () => {
     setItems((items) => [
       ...items,
       {
@@ -43,77 +52,26 @@ function Input() {
         id: nanoid(),
       },
     ]);
+  }
+
+  return {
+    getFormResult, setFromResult, items, n, add, remove
+  }
+}
+function Input() {
+
+
+  const { getFormResult, setFromResult, items, n, remove, add } = useFormState();
+  const [urlForShare, setUrlForShare] = useState<string>('');
+
+  useExternalFormState((result) => {
+    setFromResult(result);
+  })
+  const onAddButtonClick: MouseEventHandler = (e) => {
+    e.preventDefault();
+
+    add();
   };
-
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-
-      if (params.has(QUERY_KEY)) {
-        try {
-          const json = JSON.parse(params.get(QUERY_KEY) ?? '');
-
-          if (isFormResult(json)) {
-            setItems(json.cardInfos.map(transformCardInfoToItem))
-            setN(json.n);
-            return () => { }
-          }
-        }
-        catch (e) {
-          console.error(e);
-          console.log('error  on TSON')
-        }
-      }
-
-      // fallback for deprecated keys, migration for new key(STORAGE_RESULT_KEY)
-
-      if (localStorage.getItem(STORAGE_KEY) && localStorage.getItem(N_KEY)) {
-        try {
-          const cardInfosFromStorage = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "");
-          const nFromStorage = parseInt(localStorage.getItem(N_KEY) ?? "");
-
-          localStorage.removeItem(STORAGE_KEY);
-          localStorage.removeItem(N_KEY);
-
-          const formResultFromStorage = {
-            cardInfos: cardInfosFromStorage,
-            n: nFromStorage
-          }
-
-          if (isFormResult(cardInfosFromStorage)) {
-            localStorage.setItem(STORAGE_RESULT_KEY, JSON.stringify(formResultFromStorage))
-          }
-        }
-        catch (e) {
-          console.error(e);
-        }
-      }
-
-      if (localStorage.getItem(STORAGE_RESULT_KEY)) {
-        try {
-          const json = JSON.parse(localStorage.getItem(STORAGE_RESULT_KEY) ?? '');
-
-          if (isFormResult(json)) {
-            setItems(json.cardInfos.map(transformCardInfoToItem))
-            setN(json.n);
-            return () => { }
-          }
-        }
-        catch (e) {
-          console.error(e);
-          localStorage.removeItem(STORAGE_RESULT_KEY);
-          console.log('error  on TSON')
-        }
-      }
-
-      return () => {
-
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
-
 
   const onFormSubmit: FormEventHandler = (e) => {
     e.preventDefault();
@@ -122,10 +80,7 @@ function Input() {
 
     const { cardInfos, n } = formResult;
 
-    window.localStorage.setItem(
-      STORAGE_RESULT_KEY,
-      JSON.stringify(formResult)
-    );
+    saveResultOnLocalStorage(formResult);
 
     window.onSubmit(
       {
@@ -206,7 +161,7 @@ function Input() {
                           style={{
                             verticalAlign: "middle",
                           }}
-                          onClick={() => removeState(item.id)}
+                          onClick={() => remove(item.id)}
                         >
                           제거
                         </button>
@@ -218,7 +173,7 @@ function Input() {
               <tr>
                 <td colSpan={5}>
                   <div style={{ display: "flex", justifyContent: "center" }}>
-                    <button className="button is-info" onClick={addState}>
+                    <button className="button is-info" onClick={onAddButtonClick}>
                       한 명 더 추가하기
                     </button>
                   </div>
@@ -259,9 +214,7 @@ function Input() {
         </form>
         <p>
           <button className="button is-small is-warning mt-10" onClick={(e) => {
-            const results = getFormResultFromFormAndIds(items.map(x => x.id));
-
-            setUrlForShare(`${window.location.origin}${window.location.pathname}?${QUERY_KEY}=${encodeURIComponent(JSON.stringify(results))}`)
+            setUrlForShare(getURLFromResult(getFormResult()))
 
           }}>공유용 URL 만들기</button>
           <p className="mt-3">
@@ -278,6 +231,20 @@ function getIdForURL(id: string) { return id + "url" };
 function getIdForCheck(id: string) { return id + "checked" };
 function getIdForCardType(id: string) { return id + "type" };
 
+
+function getCardInfoFromForm(id: string): CardInfo {
+  const name = (document.getElementById(getIdForName(id)) as HTMLInputElement).value;
+  const url = (document.getElementById(getIdForURL(id)) as HTMLInputElement).value;
+  const checked = (document.getElementById(getIdForCheck(id)) as HTMLInputElement).checked;
+  const type = (document.getElementById(getIdForCardType(id)) as HTMLInputElement).value;
+
+  return {
+    name,
+    url,
+    checked,
+    type,
+  }
+}
 function getFormResultFromFormAndIds(itemIds: string[]): FormResult {
   const form = document.forms[0];
 
