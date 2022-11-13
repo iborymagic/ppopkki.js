@@ -1,8 +1,11 @@
 import "bulma";
 import { nanoid } from "nanoid";
-import React, { useEffect, useState } from "react";
-import TSON from "typescript-json";
-import Item, { CardType, cardTypes, defaultItem, isItems } from "./models";
+import React, { FormEventHandler, MouseEventHandler, useEffect, useState } from "react";
+
+import { CardInfo } from "./models/card-info";
+import { cardTypes } from "./models/card-type";
+import { FormResult, isFormResult } from "./models/form-result";
+import { defaultItem, isItems, Item } from "./models/item";
 
 const STORAGE_KEY = "table";
 const N_KEY = "n";
@@ -10,15 +13,7 @@ const QUERY_KEY = "data";
 
 declare global {
   interface Window {
-    onSubmit: (
-      arr: {
-        data: {
-          name: string;
-        };
-        pic: string;
-      }[],
-      n: number
-    ) => void;
+    onSubmit: (result: FormResult) => void;
     onMouseMove: () => void;
     setGuideText: (text: string) => void;
   }
@@ -35,7 +30,7 @@ function Input() {
     setItems((items) => items.filter((item) => item.id !== id));
   };
 
-  const addState = (e) => {
+  const addState: MouseEventHandler = (e) => {
     e.preventDefault();
     setItems((items) => [
       ...items,
@@ -53,11 +48,8 @@ function Input() {
       if (params.has(QUERY_KEY)) {
         try {
           const json = JSON.parse(params.get(QUERY_KEY) ?? '');
-          console.log({ json })
-          const isValidJSON = TSON.is<FormResult>(json)
-          console.log({ result: TSON.validate<FormResult>(json) })
-          console.log({ isValidJSON })
-          if (isValidJSON) {
+
+          if (isFormResult(json)) {
             setItems(json.cardInfos.map(transformCardInfoToItem))
             setN(json.n);
             return () => { }
@@ -86,7 +78,7 @@ function Input() {
   }, []);
 
 
-  const onFormSubmit = (e) => {
+  const onFormSubmit: FormEventHandler = (e) => {
     e.preventDefault();
 
     const { cardInfos, n } = getFormResultFromFormAndIds(items.map(x => x.id));
@@ -99,8 +91,10 @@ function Input() {
     );
     window.localStorage.setItem(N_KEY, String(n));
     window.onSubmit(
-      cardInfos.filter((x) => x.checked),
-      n
+      {
+        cardInfos: cardInfos.filter((x) => x.checked),
+        n
+      }
     );
   }
 
@@ -248,10 +242,6 @@ function getIdForURL(id: string) { return id + "url" };
 function getIdForCheck(id: string) { return id + "checked" };
 function getIdForCardType(id: string) { return id + "type" };
 
-type FormResult = {
-  cardInfos: CardInfo[];
-  n: number;
-}
 function getFormResultFromFormAndIds(itemIds: string[]): FormResult {
   const form = document.forms[0];
 
@@ -287,20 +277,10 @@ function getFormResultFromFormAndIds(itemIds: string[]): FormResult {
 
   return {
     cardInfos,
-    n: form["n"]?.value ?? 1
+    n: form["n"]?.value ?? 2
   }
 }
 
-type CardInfo = {
-  data: {
-    name: 'string';
-    type: string;
-    type2?: string;
-  };
-  pic: string;
-  checked: boolean;
-  type: CardType;
-}
 function transformCardInfoToItem(cardInfo: CardInfo): Item {
   return {
     id: nanoid(),
