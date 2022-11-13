@@ -1,5 +1,4 @@
 /** @type {import('vite').UserConfig} */
-import react from '@vitejs/plugin-react'
 export default {
     root: 'src',
     publicDir: 'assets',
@@ -7,8 +6,5 @@ export default {
     build: {
         assetsDir: 'public',
         outDir: '../dist'
-    },
-    plugins: [
-        react(),
-    ]
+    }
 }

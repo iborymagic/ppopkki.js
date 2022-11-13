@@ -7,8 +7,12 @@ import { cardTypes } from "./models/card-type";
 import { FormResult, isFormResult } from "./models/form-result";
 import { defaultItem, isItems, Item } from "./models/item";
 
+/** @deprecated */
 const STORAGE_KEY = "table";
+/** @deprecated */
 const N_KEY = "n";
+
+const STORAGE_RESULT_KEY = "table-result";
 const QUERY_KEY = "data";
 
 declare global {
@@ -61,19 +65,52 @@ function Input() {
         }
       }
 
-      const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "");
-      const nFromStorage = parseInt(localStorage.getItem(N_KEY) ?? "");
+      // fallback for deprecated keys, migration for new key(STORAGE_RESULT_KEY)
 
-      setN(isNaN(nFromStorage) ? 1 : nFromStorage);
-      if (isItems(arr)) {
-        setItems(arr);
+      if (localStorage.getItem(STORAGE_KEY) && localStorage.getItem(N_KEY)) {
+        try {
+          const cardInfosFromStorage = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "");
+          const nFromStorage = parseInt(localStorage.getItem(N_KEY) ?? "");
+
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(N_KEY);
+
+          const formResultFromStorage = {
+            cardInfos: cardInfosFromStorage,
+            n: nFromStorage
+          }
+
+          if (isFormResult(cardInfosFromStorage)) {
+            localStorage.setItem(STORAGE_RESULT_KEY, JSON.stringify(formResultFromStorage))
+          }
+        }
+        catch (e) {
+          console.error(e);
+        }
       }
+
+      if (localStorage.getItem(STORAGE_RESULT_KEY)) {
+        try {
+          const json = JSON.parse(localStorage.getItem(STORAGE_RESULT_KEY) ?? '');
+
+          if (isFormResult(json)) {
+            setItems(json.cardInfos.map(transformCardInfoToItem))
+            setN(json.n);
+            return () => { }
+          }
+        }
+        catch (e) {
+          console.error(e);
+          localStorage.removeItem(STORAGE_RESULT_KEY);
+          console.log('error  on TSON')
+        }
+      }
+
       return () => {
 
       }
     } catch (e) {
       console.error(e);
-      localStorage.removeItem(STORAGE_KEY);
     }
   }, []);
 
@@ -81,15 +118,15 @@ function Input() {
   const onFormSubmit: FormEventHandler = (e) => {
     e.preventDefault();
 
-    const { cardInfos, n } = getFormResultFromFormAndIds(items.map(x => x.id));
+    const formResult = getFormResultFromFormAndIds(items.map(x => x.id));
 
-    const itemsForStorage: Item[] = cardInfos.map(transformCardInfoToItem);
+    const { cardInfos, n } = formResult;
 
     window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(itemsForStorage)
+      STORAGE_RESULT_KEY,
+      JSON.stringify(formResult)
     );
-    window.localStorage.setItem(N_KEY, String(n));
+
     window.onSubmit(
       {
         cardInfos: cardInfos.filter((x) => x.checked),
@@ -214,7 +251,6 @@ function Input() {
               type="submit"
               onClick={(e) => {
                 onFormSubmit(e)
-
               }}
             >
               가즈아
@@ -229,7 +265,7 @@ function Input() {
 
           }}>공유용 URL 만들기</button>
           <p className="mt-3">
-            {urlForShare && <textarea className="textarea" readOnly value={urlForShare}></textarea>}
+            {urlForShare && <textarea className="textarea" style={{ fontSize: '8px' }} readOnly value={urlForShare} rows={6}></textarea>}
           </p>
         </p>
       </div>
