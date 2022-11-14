@@ -17,49 +17,7 @@ declare global {
   }
 }
 
-
-function useFormState() {
-  const [items, setItems] = useState<Item[]>([defaultItem]);
-  const [n, setN] = useState<number>(1);
-
-  const getFormResult = (): FormResult | null => {
-    const formResult = {
-      n,
-      cardInfos: getFormResultFromFormAndIds(items.map(x => x.id))
-    }
-
-    if (formResultSchema.isType(formResult)) {
-      return formResult;
-    }
-    return null;
-  }
-
-  const setFromResult = (result: FormResult) => {
-    setItems(result.cardInfos.map(transformCardInfoToItem));
-    setN(result.n)
-  }
-
-
-  const remove = (id: string) => {
-    setItems((items) => items.filter((item) => item.id !== id));
-  };
-
-  const add = () => {
-    setItems((items) => [
-      ...items,
-      {
-        ...defaultItem,
-        id: nanoid(),
-      },
-    ]);
-  }
-
-  return {
-    getFormResult, setFromResult, items, n, add, remove
-  }
-}
 function Input() {
-
 
   const { getFormResult, setFromResult, items, n, remove, add } = useFormState();
   const [urlForShare, setUrlForShare] = useState<string>('');
@@ -76,7 +34,7 @@ function Input() {
   const onFormSubmit: FormEventHandler = (e) => {
     e.preventDefault();
 
-    const formResult = getFormResultFromFormAndIds(items.map(x => x.id));
+    const formResult = getFormResultFromFormAndIds(items.map(x => x.id), document.forms[0]);
 
     const { cardInfos, n } = formResult;
 
@@ -115,7 +73,7 @@ function Input() {
               <th> </th>
             </thead>
             <tbody>
-              {items.map((item, idx) => {
+              {items.map((item) => {
                 return (
                   <tr key={item.id}>
                     <td>
@@ -214,7 +172,9 @@ function Input() {
         </form>
         <p>
           <button className="button is-small is-warning mt-10" onClick={(e) => {
-            setUrlForShare(getURLFromResult(getFormResult()))
+            const formResult = getFormResult();
+            if (!formResult) return;
+            setUrlForShare(getURLFromResult(formResult))
 
           }}>공유용 URL 만들기</button>
           <p className="mt-3">
@@ -226,57 +186,87 @@ function Input() {
   );
 }
 
+
+
+function useFormState() {
+  const [items, setItems] = useState<Item[]>([defaultItem]);
+  const [n, setN] = useState<number>(1);
+
+  const getFormResult = (): FormResult | null => {
+    const formResult = {
+      n,
+      cardInfos: items.map(x => x.id).map(id => getCardInfoFromForm(id, document.forms[0]))
+    }
+
+    if (formResultSchema.isType(formResult)) {
+      return formResult;
+    }
+    return null;
+  }
+
+  const setFromResult = (result: FormResult) => {
+    setItems(result.cardInfos.map(transformCardInfoToItem));
+    setN(result.n)
+  }
+
+
+  const remove = (id: string) => {
+    setItems((items) => items.filter((item) => item.id !== id));
+  };
+
+  const add = () => {
+    setItems((items) => [
+      ...items,
+      {
+        ...defaultItem,
+        id: nanoid(),
+      },
+    ]);
+  }
+
+  return {
+    getFormResult, setFromResult, items, n, add, remove,
+  }
+}
+
 function getIdForName(id: string) { return id + "name" };
 function getIdForURL(id: string) { return id + "url" };
 function getIdForCheck(id: string) { return id + "checked" };
 function getIdForCardType(id: string) { return id + "type" };
 
 
-function getCardInfoFromForm(id: string): CardInfo {
-  const name = (document.getElementById(getIdForName(id)) as HTMLInputElement).value;
-  const url = (document.getElementById(getIdForURL(id)) as HTMLInputElement).value;
-  const checked = (document.getElementById(getIdForCheck(id)) as HTMLInputElement).checked;
-  const type = (document.getElementById(getIdForCardType(id)) as HTMLInputElement).value;
+function getCardInfoFromForm(id: string, form: HTMLFormElement): CardInfo {
+  const name =
+    form[getIdForName(id)]?.value ?? defaultItem.name;
+  const url =
+    form[getIdForURL(id)]?.value ?? defaultItem.url;
+  const cardType =
+    form[getIdForCardType(id)]?.value ?? defaultItem.type;
+  const checked =
+    form[getIdForCheck(id)]?.checked ??
+    defaultItem.checked;
+
+  const typeObj = {
+    type: cardType.split("_")[0],
+    type2:
+      cardType.split("_").length > 1
+        ? cardType.split("_")[1]
+        : undefined,
+  };
 
   return {
-    name,
-    url,
+    data: {
+      name,
+      ...typeObj,
+    },
+    pic: url,
     checked,
-    type,
-  }
+    type: cardType,
+  };
 }
-function getFormResultFromFormAndIds(itemIds: string[]): FormResult {
-  const form = document.forms[0];
+function getFormResultFromFormAndIds(itemIds: string[], form: HTMLFormElement): FormResult {
 
-  const cardInfos = itemIds.map((id) => {
-    const name =
-      form[getIdForName(id)]?.value ?? defaultItem.name;
-    const url =
-      form[getIdForURL(id)]?.value ?? defaultItem.url;
-    const cardType =
-      form[getIdForCardType(id)]?.value ?? defaultItem.type;
-    const checked =
-      form[getIdForCheck(id)]?.checked ??
-      defaultItem.checked;
-
-    const typeObj = {
-      type: cardType.split("_")[0],
-      type2:
-        cardType.split("_").length > 1
-          ? cardType.split("_")[1]
-          : undefined,
-    };
-
-    return {
-      data: {
-        name,
-        ...typeObj,
-      },
-      pic: url,
-      checked,
-      type: cardType,
-    };
-  });
+  const cardInfos = itemIds.map(id => getCardInfoFromForm(id, form));
 
   return {
     cardInfos,
