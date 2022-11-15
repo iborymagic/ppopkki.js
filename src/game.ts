@@ -143,6 +143,7 @@ class Game {
       this.deck.visible = false;
 
       await this.pop();
+      window.setGuideText("이미지 로딩 중..");
       await Promise.all(cards.map((card) => card.applyYGOFront()));
 
       this.hasCardLoaded = true;
