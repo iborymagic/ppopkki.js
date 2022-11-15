@@ -1,112 +1,52 @@
-import React, { useEffect, useState } from "react";
-import { nanoid } from "nanoid";
 import "bulma";
+import { nanoid } from "nanoid";
+import React, { FormEventHandler, MouseEventHandler, useEffect, useState } from "react";
+import { setQuaternionFromProperEuler } from "three/src/math/MathUtils";
 
-// https://github.com/ymssx/ygo-card/tree/master/source/mold/frame
-const cardTypes = [
-  "monster",
-  "monster_cl",
-  "monster_lj",
-  "monster_rh",
-  "monster_tc",
-  "monster_tk",
-  "monster_tt",
-  "monster_xg",
-  "monster_ys",
-  "spell",
-  "trap",
-] as const;
-
-type CardType = typeof cardTypes[number];
-
-type Item = {
-  checked: boolean;
-  id: string;
-  name: string;
-  url: string;
-  type: CardType;
-};
-const STORAGE_KEY = "table";
-const N_KEY = "n";
+import { CardInfo } from "./models/card-info";
+import { cardTypes } from "./models/card-type";
+import { FormResult, formResultSchema, isFormResult } from "./models/form-result";
+import { defaultItem, isItems, Item } from "./models/item";
+import useExternalFormState, { getURLFromResult, saveResultOnLocalStorage } from "./use-external-form-state";
 
 declare global {
   interface Window {
-    onSubmit: (
-      arr: {
-        data: {
-          name: string;
-        };
-        pic: string;
-      }[],
-      n: number
-    ) => void;
+    onSubmit: (result: FormResult) => void;
     onMouseMove: () => void;
     setGuideText: (text: string) => void;
   }
 }
-const defaultItem: Item = {
-  id: nanoid(),
-  name: "",
-  url: "",
-  checked: true,
-  type: "monster",
-};
-
-const isItems = (value: unknown): value is Item[] => {
-  if (typeof value !== "object") return false;
-  if (!Array.isArray(value)) return false;
-  return value.every((item) => {
-    return (
-      "id" in item &&
-      "name" in item &&
-      "url" in item &&
-      "checked" in item &&
-      typeof item.id === "string" &&
-      typeof item.name === "string" &&
-      typeof item.url === "string" &&
-      typeof item.checked == "boolean"
-    );
-  });
-};
 
 function Input() {
-  const [items, setItems] = useState<Item[]>([defaultItem]);
-  const [n, setN] = useState<number | undefined>(undefined);
 
-  const removeState = (id: string) => {
-    setItems((items) => items.filter((item) => item.id !== id));
-  };
+  const { getFormResult, setFromResult, items, n, remove, add } = useFormState();
+  const [urlForShare, setUrlForShare] = useState<string>('');
 
-  const addState = (e) => {
+  useExternalFormState((result) => {
+    setFromResult(result);
+  })
+  const onAddButtonClick: MouseEventHandler = (e) => {
     e.preventDefault();
-    setItems((items) => [
-      ...items,
-      {
-        ...defaultItem,
-        id: nanoid(),
-      },
-    ]);
+
+    add();
   };
 
-  const getIdForName = (id: string) => id + "name";
-  const getIdForURL = (id: string) => id + "url";
-  const getIdForCheck = (id: string) => id + "checked";
-  const getIdForCardType = (id: string) => id + "type";
+  const onFormSubmit: FormEventHandler = (e) => {
+    e.preventDefault();
 
-  useEffect(() => {
-    try {
-      const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "");
-      const nFromStorage = parseInt(localStorage.getItem(N_KEY) ?? "");
+    const formResult = getFormResultFromFormAndIds(items.map(x => x.id), document.forms[0]);
 
-      setN(isNaN(nFromStorage) ? 1 : nFromStorage);
-      if (isItems(arr)) {
-        setItems(arr);
+    const { cardInfos, n } = formResult;
+
+    saveResultOnLocalStorage(formResult);
+
+    window.onSubmit(
+      {
+        cardInfos: cardInfos.filter((x) => x.checked),
+        n
       }
-    } catch (e) {
-      console.error(e);
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, []);
+    );
+  }
 
   return (
     <div
@@ -133,7 +73,7 @@ function Input() {
               <th> </th>
             </thead>
             <tbody>
-              {items.map((item, idx) => {
+              {items.map((item) => {
                 return (
                   <tr key={item.id}>
                     <td>
@@ -179,7 +119,7 @@ function Input() {
                           style={{
                             verticalAlign: "middle",
                           }}
-                          onClick={() => removeState(item.id)}
+                          onClick={() => remove(item.id)}
                         >
                           제거
                         </button>
@@ -191,7 +131,7 @@ function Input() {
               <tr>
                 <td colSpan={5}>
                   <div style={{ display: "flex", justifyContent: "center" }}>
-                    <button className="button is-info" onClick={addState}>
+                    <button className="button is-info" onClick={onAddButtonClick}>
                       한 명 더 추가하기
                     </button>
                   </div>
@@ -223,69 +163,124 @@ function Input() {
               className="button is-primary"
               type="submit"
               onClick={(e) => {
-                e.preventDefault();
-                const form = document.forms[0];
-
-                const result = items.map((item) => {
-                  const name =
-                    form[getIdForName(item.id)]?.value ?? defaultItem.name;
-                  const url =
-                    form[getIdForURL(item.id)]?.value ?? defaultItem.url;
-                  const cardType =
-                    form[getIdForCardType(item.id)]?.value ?? defaultItem.type;
-                  const checked =
-                    form[getIdForCheck(item.id)]?.checked ??
-                    defaultItem.checked;
-
-                  const typeObj = {
-                    type: cardType.split("_")[0],
-                    type2:
-                      cardType.split("_").length > 1
-                        ? cardType.split("_")[1]
-                        : undefined,
-                  };
-
-                  return {
-                    data: {
-                      name,
-                      ...typeObj,
-                    },
-                    pic: url,
-                    checked,
-                    type: cardType,
-                  };
-                });
-
-                const itemsForStorage: Item[] = result.map((item, idx) => {
-                  return {
-                    id: nanoid(),
-                    name: item.data.name ?? defaultItem.name,
-                    url: item.pic ?? defaultItem.url,
-                    checked: item.checked ?? defaultItem.checked,
-                    type: item.type ?? defaultItem.type,
-                  };
-                });
-
-                const n = form["n"]?.value ?? 1;
-
-                window.localStorage.setItem(
-                  STORAGE_KEY,
-                  JSON.stringify(itemsForStorage)
-                );
-                window.localStorage.setItem(N_KEY, String(n));
-                window.onSubmit(
-                  result.filter((x) => x.checked),
-                  n
-                );
+                onFormSubmit(e)
               }}
             >
               가즈아
             </button>
           </p>
         </form>
+        <p>
+          <button className="button is-small is-warning mt-10" onClick={(e) => {
+            const formResult = getFormResult();
+            if (!formResult) return;
+            setUrlForShare(getURLFromResult(formResult))
+
+          }}>공유용 URL 만들기</button>
+          <p className="mt-3">
+            {urlForShare && <textarea className="textarea" style={{ fontSize: '8px' }} readOnly value={urlForShare} rows={6}></textarea>}
+          </p>
+        </p>
       </div>
     </div>
   );
 }
 
+
+
+function useFormState() {
+  const [items, setItems] = useState<Item[]>([defaultItem]);
+  const [n, setN] = useState<number>(1);
+
+  const getFormResult = (): FormResult | null => {
+    const formResult = {
+      n,
+      cardInfos: items.map(x => x.id).map(id => getCardInfoFromForm(id, document.forms[0]))
+    }
+
+    if (formResultSchema.isType(formResult)) {
+      return formResult;
+    }
+    return null;
+  }
+
+  const setFromResult = (result: FormResult) => {
+    setItems(result.cardInfos.map(transformCardInfoToItem));
+    setN(result.n)
+  }
+
+
+  const remove = (id: string) => {
+    setItems((items) => items.filter((item) => item.id !== id));
+  };
+
+  const add = () => {
+    setItems((items) => [
+      ...items,
+      {
+        ...defaultItem,
+        id: nanoid(),
+      },
+    ]);
+  }
+
+  return {
+    getFormResult, setFromResult, items, n, add, remove,
+  }
+}
+
+function getIdForName(id: string) { return id + "name" };
+function getIdForURL(id: string) { return id + "url" };
+function getIdForCheck(id: string) { return id + "checked" };
+function getIdForCardType(id: string) { return id + "type" };
+
+
+function getCardInfoFromForm(id: string, form: HTMLFormElement): CardInfo {
+  const name =
+    form[getIdForName(id)]?.value ?? defaultItem.name;
+  const url =
+    form[getIdForURL(id)]?.value ?? defaultItem.url;
+  const cardType =
+    form[getIdForCardType(id)]?.value ?? defaultItem.type;
+  const checked =
+    form[getIdForCheck(id)]?.checked ??
+    defaultItem.checked;
+
+  const typeObj = {
+    type: cardType.split("_")[0],
+    type2:
+      cardType.split("_").length > 1
+        ? cardType.split("_")[1]
+        : undefined,
+  };
+
+  return {
+    data: {
+      name,
+      ...typeObj,
+    },
+    pic: url,
+    checked,
+    type: cardType,
+  };
+}
+function getFormResultFromFormAndIds(itemIds: string[], form: HTMLFormElement): FormResult {
+
+  const cardInfos = itemIds.map(id => getCardInfoFromForm(id, form));
+
+  return {
+    cardInfos,
+    n: form["n"]?.value ?? 2
+  }
+}
+
+function transformCardInfoToItem(cardInfo: CardInfo): Item {
+  return {
+    id: nanoid(),
+    name: cardInfo.data.name ?? defaultItem.name,
+    url: cardInfo.pic ?? defaultItem.url,
+    checked: cardInfo.checked ?? defaultItem.checked,
+    type: cardInfo.type ?? defaultItem.type,
+  }
+}
 export default Input;

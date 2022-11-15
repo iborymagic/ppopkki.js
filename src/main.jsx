@@ -12,9 +12,10 @@ const game = new Game();
 const root = createRoot(document.querySelector("div#input"));
 root.render(<Input></Input>);
 
-function onSubmit(arr, n) {
+function onSubmit(formResult) {
   try {
-    game.prepareCards(getCardDataListFromStringArr(arr, n));
+    const { cardInfos, n } = formResult;
+    game.prepareCards(getCardDataListFromStringArr(cardInfos, n));
     const input = document.getElementById("input");
     if (input) input.style = "display: none;";
   } catch (e) {
@@ -77,14 +78,14 @@ const raycaster = new THREE.Raycaster();
 
 const setGuideText = (text) => {
   const guide = document.querySelector('#guide-text')
-  if(!guide) return;
+  if (!guide) return;
   guide.innerHTML = text;
 }
 
 window.setGuideText = setGuideText;
 
 const onMouseMove = (e) => {
-  if(e) {
+  if (e) {
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
   }

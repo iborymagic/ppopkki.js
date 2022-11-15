@@ -9,10 +9,16 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^9.0.2",
     "@types/react": "^18.0.23",
     "@types/react-dom": "^18.0.7",
     "@types/three": "^0.144.0",
+    "@vitejs/plugin-react": "^2.2.0",
     "sass": "^1.55.0",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.4.1",
+    "ttypescript": "^1.5.13",
+    "typescript-json": "^3.3.23",
     "vite": "^3.0.7"
   },
   "dependencies": {
@@ -26,6 +32,7 @@
     "react-dom": "^18.2.0",
     "three": "^0.143.0",
     "three-nebula": "^10.0.3",
-    "ygo-card": "^1.4.1-4"
+    "ygo-card": "^1.4.1-4",
+    "yup": "^0.32.11"
   }
 }
